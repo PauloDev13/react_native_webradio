@@ -1,8 +1,9 @@
 import {StatusBar} from 'expo-status-bar';
-import {ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useEffect, useRef, useState} from "react";
-import {Audio} from "expo-av";
+import {ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, {useEffect, useState} from "react";
 import {MaterialIcons} from '@expo/vector-icons'
+import TrackPlayer, {Capability, Event, State, usePlaybackState, useTrackPlayerEvents} from "react-native-track-player";
+
 
 const STREAM_URL = "https://centova2.ipstm.net/proxy/bmjceqts/stream";
 
@@ -18,154 +19,71 @@ const initialTrack: TrackInfo = {
   artwork: null,
 }
 
-async function fetchArtworkItunes(artist: string, title: string): Promise<string | null> {
-  try {
-    const query = encodeURIComponent(`${artist} ${title}`);
-    const country = 'BR';
-    const res = await fetch(`https://itunes.apple.com/search?term=${query}&limit=1&entity=musicTrack&country=${country}`);
-    if (!res.ok) return null;
-    const json = await res.json();
-    console.log(json.results);
-    if (json.results?.length > 0){
-      return json.results[0].artworkUrl100;
-    }
-  }catch (err) {
-    console.error(err);
-  }
-  return null;
-}
-
-async function fetchIcyMetadata(uri: string): Promise<{artist?: string, title?: string} | null> {
-  try {
-    const res = await fetch(uri, {
-      method: 'GET',
-      headers: {
-        'Icy-MetaData': '1',
-        'User-Agent': "ExpoRadioPlayer",
-      }
-    });
-    if (!res.ok) {
-      console.warn('Falha ao conectar stream ICY');
-      return null;
-    }
-
-    const metaintHeader = res.headers.get('icy-metaint');
-    if (!metaintHeader) {
-      console.warn('Falha ao retornar cabeçalho ICY');
-      return null;
-    }
-
-    const metaint = parseInt(metaintHeader, 10);
-    const reader = res.body?.getReader();
-    if(!reader) return null;
-
-    let bytesUntilMeta = metaint;
-    let songTitle: string | null = null;
-
-    while (true) {
-      const{done, value} = await reader.read();
-      if (done) break;
-      if (!value) continue;
-
-      let offset = 0;
-      while (offset < value.length) {
-        const remaining = value.length - offset;
-
-        if (bytesUntilMeta > 0) {
-          const cosume = Math.min(bytesUntilMeta, remaining);
-          offset += cosume;
-          bytesUntilMeta-= cosume;
-        } else {
-          if(remaining < 1) break
-          const metaLength = value[offset] * 16;
-          offset += 1;
-          if(metaLength > 0) {
-            const metaBytes = value.slice(offset, offset + metaLength);
-            const metaString = new TextDecoder('utf-8').decode(metaBytes);
-            const match = metaString.match(/StreamTitle='([^']*)';/);
-
-            if (match && match[1]) {
-              songTitle = match[1].trim();
-              const parts = songTitle.split(' - ');
-              const artist = parts[0].trim() || 'Desconhecido';
-              const title = parts[1].trim() || 'Ao vivo';
-              reader.cancel()
-              return {artist, title};
-            }
-          }
-          offset += metaLength;
-          bytesUntilMeta = metaint;
-        }
-      }
-    }
-    return null;
-  } catch (error) {
-    console.error('Erro ao ler Icy metadata');
-    return null;
-  }
-
-  // teste
-
-}
-
 export default function App() {
-  const soundRef = useRef<Audio.Sound | null>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [track, setTrack] = useState<TrackInfo>(initialTrack);
 
-  const playerStream = async () => {
+  const playbackState = usePlaybackState();
+  const [track, setTrack] = useState<TrackInfo>(initialTrack);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    (async () => {
+      await setupPlayer();
+    })();
+    return () => {
+      TrackPlayer.reset();
+    };
+  },[]);
+
+  useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
+    if(event.metadata.title) {
+      const rawTitle = event.metadata.title;
+      const [maybeArtist, maybeTitle] = rawTitle.split(' - ');
+      const artist = maybeArtist.trim() || 'Desconhecido';
+      const title = maybeTitle.trim() || rawTitle;
+
+      const artwork = await fetchArtworkFromITunes(artist, title);
+      setTrack({artist, title, artwork});
+    }
+  });
+
+  const setupPlayer = async (): Promise<void> => {
+    try {
+      await TrackPlayer.setupPlayer();
+      await TrackPlayer.updateOptions({
+        capabilities: [
+            Capability.Play,
+            Capability.Pause,
+            Capability.Stop,
+            Capability.SeekTo,
+        ],
+        compactCapabilities: [Capability.Play, Capability.Pause],
+      });
+      await TrackPlayer.add({
+        id: 'stream',
+        url: STREAM_URL,
+        title: 'Web Rádio Parque Verde',
+        artist: 'Conectando...',
+      });
+    }catch(err) {
+      console.warn('Erro ao configurar player');
+    }
+  };
+
+  const togglePlayback = async () => {
     try {
       setLoading(true);
-      if (!soundRef.current) {
-        const {sound} = await Audio.Sound.createAsync(
-            {uri: STREAM_URL},
-            {shouldPlay: true}
-        );
-        soundRef.current = sound;
+      const state = (await TrackPlayer.getPlaybackState()).state;
+
+      if (state === State.Playing) {
+        await TrackPlayer.pause();
       } else {
-        await soundRef.current.playAsync();
+        await TrackPlayer.play();
       }
-      setIsPlaying(true);
-    } catch (error) {
-      Alert.alert('Erro ao reproduzir stream', String(error));
     } finally {
       setLoading(false);
     }
   };
 
-  const stopStream = async () => {
-    try {
-      if (soundRef.current) {
-        await soundRef.current.stopAsync();
-      }
-      setIsPlaying(false);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const togglePlay = () => {
-    isPlaying ? stopStream() : playerStream();
-  };
-
-  const updateTrackInfo = async () => {
-    const meta = await fetchIcyMetadata(STREAM_URL);
-    if (meta?.artist && meta?.title) {
-      const artwork = await fetchArtworkItunes(meta.artist, meta.title);
-      setTrack({
-        artist: meta.artist,
-        title: meta.title,
-        artwork: artwork,
-      });
-    }
-  };
-
-  useEffect(() => {
-    updateTrackInfo();
-    const interval = setInterval(updateTrackInfo, 1500);
-    return () => clearInterval(interval);
-  },[track]);
 
   return (
     <View style={styles.container}>
@@ -174,24 +92,50 @@ export default function App() {
         {track.artwork ? (
             <Image source={{uri: track.artwork}} style={styles.artwork} />
         ): (
-            <View style={[styles.artwork, styles.placeholder]}>
+            <View style={[styles.artwork, styles.artworkPlaceholder]}>
               <MaterialIcons name='music-note' size={64} color='#555' />
               <Text style={styles.placeholderText}>Sem capa</Text>
             </View>
         )}
       </View>
-      <Text style={styles.artist}>{track.artist}</Text>
-      <Text style={styles.title}>{track.title}</Text>
+      <Text style={styles.artistText}>{track.artist}</Text>
+      <Text style={styles.titleText}>{track.title}</Text>
       
-      <TouchableOpacity style={styles.button} onPress={togglePlay} disabled={loading}>
+      <TouchableOpacity style={[
+          styles.playButton, playbackState?.state === State.Playing ? styles.playing : undefined
+      ]} onPress={togglePlayback} disabled={loading}>
         {loading ? (
             <ActivityIndicator color='#fff' />
         ): (
-            <MaterialIcons name={isPlaying ? 'stop' : 'play-arrow'} color='#fff' size={40} />
+            <MaterialIcons
+                name={playbackState?.state === State.Playing? 'stop' : 'play-arrow'}
+                color='#fff' size={40}
+            />
         )}
       </TouchableOpacity>
     </View>
   );
+}
+
+async function fetchArtworkFromITunes(artist: string, title: string): Promise<string | null> {
+  try {
+    const query = encodeURIComponent(`${artist} ${title}`);
+    const url = `https://itunes.apple.com/search?term=${query}&limit=1&entity=song`;
+    const response = await fetch(url);
+
+    if (!response.ok) return null;
+
+    const json = await response.json();
+
+    if(json.results?.length) {
+      const artworkUrl = json.results[0].artworkUrl100;
+      return artworkUrl ? artworkUrl.replace('100x100bb', '600x600bb') : null;
+    }
+
+  }catch(err) {
+    console.warn('Erro ao buscar capa', err);
+  }
+  return null;
 }
 
 const styles = StyleSheet.create({
@@ -200,41 +144,48 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    padding: 24,
   },
   artworkContainer: {
+    alignItems: "center",
     marginBottom: 20,
   },
   artwork: {
-    width: 250,
-    height: 250,
+    width: 260,
+    height: 260,
     borderRadius: 12,
     backgroundColor: "#eee",
   },
-  placeholder: {
+  artworkPlaceholder: {
     alignItems: "center",
     justifyContent: "center",
   },
   placeholderText: {
     color: "#666",
+    marginTop: 8,
   },
-  artist: {
+  artistText: {
     fontSize: 18,
     fontWeight: "bold",
-    marginTop: 10,
+    marginTop: 8,
   },
-  title: {
+  titleText: {
     fontSize: 16,
+    color: "#444",
     marginTop: 4,
-    color: "#333",
+    textAlign: "center",
   },
-  button: {
+  playButton: {
     marginTop: 24,
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 84,
+    height: 84,
+    borderRadius: 42,
     backgroundColor: "#1E90FF",
     alignItems: "center",
     justifyContent: "center",
+    elevation: 4,
+  },
+  playing: {
+    backgroundColor: "#ff4d4d",
   },
 });
