@@ -24,6 +24,7 @@
       "supportsTablet": true
     },
     "android": {
+      "newArchEnabled": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -34,6 +35,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7144f486-a664-4fed-abfc-8d1ee02f9dde"
+      }
+    },
+    "owner": "parqueverde"
   }
 }

@@ -1,11 +1,23 @@
-import {StatusBar} from 'expo-status-bar';
-import {ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useEffect, useState} from "react";
-import {MaterialIcons} from '@expo/vector-icons'
-import TrackPlayer, {Capability, Event, State, usePlaybackState, useTrackPlayerEvents} from "react-native-track-player";
+import { StatusBar } from 'expo-status-bar';
+import {
+  ActivityIndicator,
+  AppState,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import React, { useEffect, useState } from "react";
+import { MaterialIcons } from '@expo/vector-icons'
+import { useFonts } from 'expo-font'
+import TrackPlayer, { Capability, Event, State, usePlaybackState, useTrackPlayerEvents} from "react-native-track-player";
 
 
 const STREAM_URL = "https://centova2.ipstm.net/proxy/bmjceqts/stream";
+const BACKGROUND_IMAGE = './assets/images/background.png';
+const FONT_DEFAULT = './assets/fonts/Michroma-Regular.ttf';
 
 type TrackInfo = {
   artist: string;
@@ -20,29 +32,66 @@ const initialTrack: TrackInfo = {
 }
 
 export default function App() {
-
   const playbackState = usePlaybackState();
   const [track, setTrack] = useState<TrackInfo>(initialTrack);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isPlayingReady, setIsPlayingReady] = useState<boolean>(false);
+
+  const [fontsLoaded] = useFonts({
+    'Michroma': require(FONT_DEFAULT),
+  });
 
   useEffect(() => {
-    (async () => {
-      await setupPlayer();
-    })();
+    let isMounted = true;
+    let hasInitialized = false;
+
+    const initPlayer = async () => {
+      if (!fontsLoaded || hasInitialized) return;
+
+      try {
+        await setupPlayer();
+        if (isMounted) {
+          hasInitialized = true;
+          setIsPlayingReady(true);
+          togglePlayback();
+        }
+        console.log('🎵 TrackPlayer configurado com sucesso!');
+      } catch (error) {
+        console.warn('Erro ao configurar TrackPlayer:', error);
+      }
+    };
+
+    // Executa assim que o app estiver ativo
+    const handleAppStateChange = async (nextState: string) => {
+      if (nextState === 'active' && !hasInitialized && fontsLoaded) {
+        await initPlayer();
+      }
+    };
+
+    // Adiciona listener de AppState
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    // Garante tentativa inicial (caso o app já esteja ativo)
+    if (AppState.currentState === 'active') {
+      initPlayer();
+    }
+
     return () => {
+      isMounted = false;
+      subscription.remove();
       TrackPlayer.reset();
     };
-  },[]);
+  }, [fontsLoaded]);
 
   useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
     if(event.metadata.title) {
-      const rawTitle = event.metadata.title;
+      const rawTitle = event.metadata?.title;
       const [maybeArtist, maybeTitle] = rawTitle.split(' - ');
       const artist = maybeArtist.trim() || 'Desconhecido';
       const title = maybeTitle.trim() || rawTitle;
 
       const artwork = await fetchArtworkFromITunes(artist, title);
-      setTrack({artist, title, artwork});
+      setTrack({artist: artist, title: title, artwork: artwork});
     }
   });
 
@@ -65,7 +114,7 @@ export default function App() {
         artist: 'Conectando...',
       });
     }catch(err) {
-      console.warn('Erro ao configurar player');
+      console.warn('Erro ao configurar player', err);
     }
   };
 
@@ -75,7 +124,7 @@ export default function App() {
       const state = (await TrackPlayer.getPlaybackState()).state;
 
       if (state === State.Playing) {
-        await TrackPlayer.pause();
+        await TrackPlayer.stop();
       } else {
         await TrackPlayer.play();
       }
@@ -86,9 +135,12 @@ export default function App() {
 
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
+    <ImageBackground source={require(BACKGROUND_IMAGE)} resizeMode='cover' style={styles.container}>
+      <StatusBar style="light" />
       <View style={styles.artworkContainer}>
+        <Text style={styles.title}>Parque Verde</Text>
+        <Text style={styles.subtitle}>Web Rádio</Text>
+
         {track.artwork ? (
             <Image source={{uri: track.artwork}} style={styles.artwork} />
         ): (
@@ -100,7 +152,7 @@ export default function App() {
       </View>
       <Text style={styles.artistText}>{track.artist}</Text>
       <Text style={styles.titleText}>{track.title}</Text>
-      
+
       <TouchableOpacity style={[
           styles.playButton, playbackState?.state === State.Playing ? styles.playing : undefined
       ]} onPress={togglePlayback} disabled={loading}>
@@ -108,12 +160,13 @@ export default function App() {
             <ActivityIndicator color='#fff' />
         ): (
             <MaterialIcons
+                style={[styles.iconStart, playbackState?.state === State.Playing ? styles.iconStop : undefined]}
                 name={playbackState?.state === State.Playing? 'stop' : 'play-arrow'}
                 color='#fff' size={40}
             />
         )}
       </TouchableOpacity>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -141,20 +194,34 @@ async function fetchArtworkFromITunes(artist: string, title: string): Promise<st
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "transparent",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     padding: 24,
+  },
+  title: {
+    fontSize: 22,
+    fontFamily: 'Michroma',
+    color: "#03ebff",
+    marginTop: 15,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 18,
+    fontFamily: 'Michroma',
+    color: "#03ebff",
+    marginBottom: 20,
+    textAlign: "center",
   },
   artworkContainer: {
     alignItems: "center",
     marginBottom: 20,
   },
   artwork: {
-    width: 260,
-    height: 260,
+    width: 220,
+    height: 220,
     borderRadius: 12,
-    backgroundColor: "#eee",
+    backgroundColor: "transparent",
   },
   artworkPlaceholder: {
     alignItems: "center",
@@ -166,26 +233,44 @@ const styles = StyleSheet.create({
   },
   artistText: {
     fontSize: 18,
+    fontFamily: 'Michroma',
+    color: "#03ebff",
     fontWeight: "bold",
-    marginTop: 8,
+    marginTop: 4,
+    textAlign: "center",
   },
   titleText: {
     fontSize: 16,
-    color: "#444",
+    fontStyle: "italic",
+    fontFamily: 'Michroma',
+    color: "#03ebff",
     marginTop: 4,
     textAlign: "center",
   },
   playButton: {
     marginTop: 24,
-    width: 84,
-    height: 84,
+    width: 64,
+    height: 64,
     borderRadius: 42,
-    backgroundColor: "#1E90FF",
+    borderColor: "rgba(3,235,255,0.7)",
+    borderStyle: "solid" ,
+    borderWidth: 1,
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,
   },
   playing: {
-    backgroundColor: "#ff4d4d",
+    backgroundColor: "rgba(3,235,255,0.8)",
+    borderColor: "rgba(255,77,77,0.8)",
+    borderStyle: "solid" ,
+    borderWidth: 1,
   },
+  iconStop: {
+    color: "#000b11",
+  },
+  iconStart: {
+    color: "#03ebff",
+  }
+
 });
