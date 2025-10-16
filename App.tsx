@@ -15,9 +15,14 @@ import { useFonts } from 'expo-font'
 import TrackPlayer, { Capability, Event, State, usePlaybackState, useTrackPlayerEvents} from "react-native-track-player";
 
 
-const STREAM_URL = "https://centova2.ipstm.net/proxy/bmjceqts/stream";
-const BACKGROUND_IMAGE = './assets/images/background.png';
-const FONT_DEFAULT = './assets/fonts/Michroma-Regular.ttf';
+const STREAM_URL: string = "https://centova2.ipstm.net/proxy/bmjceqts/stream";
+const FONT_DEFAULT: string = './assets/fonts/Michroma-Regular.ttf';
+
+const IMAGES = {
+  background: require('./assets/images/background.png'),
+  locucao: require('./assets/images/locucao.png'),
+  logo: require('./assets/images/logo.png'),
+}
 
 type TrackInfo = {
   artist: string;
@@ -51,9 +56,9 @@ export default function App() {
       try {
         await setupPlayer();
         if (isMounted) {
+          togglePlayback();
           hasInitialized = true;
           setIsPlayingReady(true);
-          togglePlayback();
         }
         console.log('🎵 TrackPlayer configurado com sucesso!');
       } catch (error) {
@@ -85,12 +90,12 @@ export default function App() {
 
   useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
     if(event.metadata.title) {
-      const rawTitle = event.metadata?.title;
+      const rawTitle: string = event.metadata?.title;
       const [maybeArtist, maybeTitle] = rawTitle.split(' - ');
       const artist = maybeArtist.trim() || 'Desconhecido';
-      const title = maybeTitle.trim() || rawTitle;
+      const title = maybeTitle.trim() || 'Desconhecido';
 
-      const artwork = await fetchArtworkFromITunes(artist, title);
+      const artwork: string | null = await fetchArtworkFromITunes(artist, title);
       setTrack({artist: artist, title: title, artwork: artwork});
     }
   });
@@ -121,7 +126,7 @@ export default function App() {
   const togglePlayback = async () => {
     try {
       setLoading(true);
-      const state = (await TrackPlayer.getPlaybackState()).state;
+      const state: State = (await TrackPlayer.getPlaybackState()).state;
 
       if (state === State.Playing) {
         await TrackPlayer.stop();
@@ -133,22 +138,27 @@ export default function App() {
     }
   };
 
+  const cover = ()  => {
+    return track.artist.startsWith('Paulo')
+        ? IMAGES.locucao
+        : IMAGES.logo;
+  }
 
   return (
-    <ImageBackground source={require(BACKGROUND_IMAGE)} resizeMode='cover' style={styles.container}>
+    <ImageBackground source={IMAGES.background} resizeMode='cover' style={styles.container}>
       <StatusBar style="light" />
       <View style={styles.artworkContainer}>
         <Text style={styles.title}>Parque Verde</Text>
         <Text style={styles.subtitle}>Web Rádio</Text>
 
-        {track.artwork ? (
-            <Image source={{uri: track.artwork}} style={styles.artwork} />
-        ): (
-            <View style={[styles.artwork, styles.artworkPlaceholder]}>
-              <MaterialIcons name='music-note' size={64} color='#555' />
-              <Text style={styles.placeholderText}>Sem capa</Text>
-            </View>
-        )}
+        <View>
+          {track.artwork ? (
+              <Image source={{uri: track.artwork}} style={styles.artwork} />
+          ): (
+              <Image source={cover()} style={styles.artwork} />
+            )
+          }
+        </View>
       </View>
       <Text style={styles.artistText}>{track.artist}</Text>
       <Text style={styles.titleText}>{track.title}</Text>
@@ -157,7 +167,7 @@ export default function App() {
           styles.playButton, playbackState?.state === State.Playing ? styles.playing : undefined
       ]} onPress={togglePlayback} disabled={loading}>
         {loading ? (
-            <ActivityIndicator color='#fff' />
+            <ActivityIndicator color='#03ebff' />
         ): (
             <MaterialIcons
                 style={[styles.iconStart, playbackState?.state === State.Playing ? styles.iconStop : undefined]}
@@ -200,22 +210,22 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   title: {
-    fontSize: 22,
-    fontFamily: 'Michroma',
-    color: "#03ebff",
-    marginTop: 15,
-    textAlign: "center",
-  },
-  subtitle: {
     fontSize: 18,
     fontFamily: 'Michroma',
     color: "#03ebff",
-    marginBottom: 20,
+    marginTop: 30,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: 'Michroma',
+    color: "#03ebff",
+    marginBottom: 30,
     textAlign: "center",
   },
   artworkContainer: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   artwork: {
     width: 220,
@@ -232,16 +242,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   artistText: {
-    fontSize: 18,
+    fontSize: 14,
     fontFamily: 'Michroma',
     color: "#03ebff",
-    fontWeight: "bold",
-    marginTop: 4,
     textAlign: "center",
   },
   titleText: {
-    fontSize: 16,
-    fontStyle: "italic",
+    fontSize: 12,
     fontFamily: 'Michroma',
     color: "#03ebff",
     marginTop: 4,
