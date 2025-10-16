@@ -1,5 +1,8 @@
 {
   "expo": {
+    "experiments": {
+      "newArchEnabled": false
+    },
     "plugins": [
       [
         "expo-dev-client",
