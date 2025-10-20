@@ -1,4 +1,4 @@
-import { StatusBar } from 'expo-status-bar';
+import {StatusBar} from 'expo-status-bar';
 import {
   ActivityIndicator,
   AppState,
@@ -9,11 +9,18 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import React, { useEffect, useState } from "react";
-import { MaterialIcons } from '@expo/vector-icons'
+import React, {useEffect, useState} from "react";
+import {MaterialIcons} from '@expo/vector-icons'
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import TrackPlayer, { Capability, Event, State, usePlaybackState, useTrackPlayerEvents} from "react-native-track-player";
+import TrackPlayer, {
+  AppKilledPlaybackBehavior,
+  Capability,
+  Event,
+  State,
+  usePlaybackState,
+  useTrackPlayerEvents
+} from "react-native-track-player";
 import {SafeAreaView} from "react-native-safe-area-context";
 
 // Impede que a splash screen desapareça antes das fontes carregarem
@@ -22,22 +29,27 @@ SplashScreen.preventAutoHideAsync();
 const STREAM_URL: string = "https://centova2.ipstm.net/proxy/bmjceqts/stream";
 const FONT_DEFAULT: string = './assets/fonts/Michroma-Regular.ttf';
 
-const IMAGES = {
-  background: require('./assets/images/background.png'),
+type LocalArtworkKey = 'logo' | 'locucao';
+
+const localArtwork: Record<LocalArtworkKey, any> = {
   locucao: require('./assets/images/locucao.png'),
   logo: require('./assets/images/logo.png'),
+}
+
+const IMAGES = {
+  background: require('./assets/images/background.png'),
 }
 
 type TrackInfo = {
   artist: string;
   title: string;
-  artwork?: string | null;
+  artwork: string | LocalArtworkKey | null;
 }
 
 const initialTrack: TrackInfo = {
-  artist: '-',
-  title: 'Conectando...',
-  artwork: null,
+  artist: 'Web Rádio',
+  title: 'Web Rádio',
+  artwork: 'logo',
 }
 
 export default function App() {
@@ -47,23 +59,30 @@ export default function App() {
   const [isPlayingReady, setIsPlayingReady] = useState<boolean>(false);
   const [appIsReady, setAppIsReady] = useState<boolean>(false);
 
+  // --- Corrigido: carregamento seguro das fontes ---
   useEffect(() => {
+    let isMounted = true;
+
     async function prepare() {
       try {
+        await SplashScreen.preventAutoHideAsync();
         await Font.loadAsync({
           'Michroma': require(FONT_DEFAULT),
-        })
-      }catch (err){
-        console.warn('Erro ao carregar fontes:', err)
-      }finally {
-        setAppIsReady(true);
-        // só libera a UI depois que as fontes estão prontas
-        await SplashScreen.hideAsync();
+        });
+      } catch (err) {
+        console.warn('Erro ao carregar fontes:', err);
+      } finally {
+        if (isMounted) {
+          setAppIsReady(true);
+        }
       }
     }
+
     prepare();
+    return () => { isMounted = false; };
   }, []);
 
+  // --- Inicialização do player ---
   useEffect(() => {
     if (!appIsReady) return;
     let isMounted = true;
@@ -73,9 +92,9 @@ export default function App() {
       if (hasInitialized) return;
 
       try {
-        await setupPlayer();
+        await playerSetup();
         if (isMounted) {
-          togglePlayback();
+          TrackPlayer.play();
           hasInitialized = true;
           setIsPlayingReady(true);
         }
@@ -85,17 +104,13 @@ export default function App() {
       }
     };
 
-    // Executa assim que o app estiver ativo
     const handleAppStateChange = async (nextState: string) => {
       if (nextState === 'active' && !hasInitialized) {
         await initPlayer();
       }
     };
 
-    // Adiciona listener de AppState
     const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-    // Garante tentativa inicial (caso o app já esteja ativo)
     if (AppState.currentState === 'active') {
       initPlayer();
     }
@@ -103,31 +118,60 @@ export default function App() {
     return () => {
       isMounted = false;
       subscription.remove();
-      TrackPlayer.reset();
     };
   }, [appIsReady]);
 
+  // --- Atualiza track info quando metadados chegam ---
   useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
-    if(event.metadata.title) {
-      const rawTitle: string = event.metadata?.title;
-      const [maybeArtist, maybeTitle] = rawTitle.split(' - ');
-      const artist = maybeArtist.trim() || 'Desconhecido';
-      const title = maybeTitle.trim() || 'Desconhecido';
+    if (event.metadata?.title) {
+      const [maybeArtist, maybeTitle] = event.metadata.title.split(' - ');
+      const artist = maybeArtist?.trim() || '';
+      const title = maybeTitle?.trim() || '';
 
-      const artwork: string | null = await fetchArtworkFromITunes(artist, title);
-      setTrack({artist: artist, title: title, artwork: artwork});
+      // limpa artwork para forçar nova busca
+      setTrack({ artist, title, artwork: null });
     }
   });
 
-  const setupPlayer = async (): Promise<void> => {
+  // --- Força atualização da artwork sempre que artista ou título mudam ---
+  useEffect(() => {
+    if (!track.artist || !track.title) return;
+
+    let isActive = true;
+
+    (async () => {
+      const artworkRemote = await fetchArtworkFromITunes(track.artist, track.title);
+      let artwork: string | LocalArtworkKey | null = artworkRemote;
+
+      if (track.artist === 'Paulo Roberto') {
+        artwork = 'locucao';
+      } else if (track.title.startsWith('Web') || track.title === 'Hora' || track.title === 'Minuto') {
+        artwork = 'logo';
+      }
+
+      if (isActive) {
+        setTrack(prev => ({
+          ...prev,
+          artwork: artwork || '',
+        }));
+      }
+    })();
+
+    return () => { isActive = false };
+  }, [track.artist, track.title]);
+
+  const playerSetup = async (): Promise<void> => {
     try {
       await TrackPlayer.setupPlayer();
       await TrackPlayer.updateOptions({
+        android:{
+          appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+        },
         capabilities: [
-            Capability.Play,
-            Capability.Pause,
-            Capability.Stop,
-            Capability.SeekTo,
+          Capability.Play,
+          Capability.Pause,
+          Capability.Stop,
+          Capability.SeekTo,
         ],
         compactCapabilities: [Capability.Play, Capability.Pause],
       });
@@ -137,17 +181,20 @@ export default function App() {
         title: 'Web Rádio Parque Verde',
         artist: 'Conectando...',
       });
-    }catch(err) {
+    } catch (err) {
       console.warn('Erro ao configurar player', err);
     }
   };
 
   const togglePlayback = async () => {
-    try {
-      setLoading(true);
-      const state: State = (await TrackPlayer.getPlaybackState()).state;
+    setLoading(true);
 
-      if (state === State.Playing) {
+    await Promise.resolve(); // permite atualização da UI
+
+    try {
+      const playback = await TrackPlayer.getPlaybackState();
+
+      if (playback.state === State.Playing) {
         await TrackPlayer.stop();
       } else {
         await TrackPlayer.play();
@@ -157,72 +204,85 @@ export default function App() {
     }
   };
 
-  const cover = ()  => {
-    if (track.artist.startsWith('Paulo Roberto')) {
-      return IMAGES.locucao;
-    }
-
-    if (track.title.startsWith('Hora') || track.title.startsWith('Minuto')) {
-      return IMAGES.logo;
-    }
-    return IMAGES.logo;
-  }
-
   return (
-    <ImageBackground source={IMAGES.background} resizeMode='cover' style={styles.container}>
-      <SafeAreaView style={styles.safeArea} >
-        <StatusBar style="light" />
-        <View style={styles.artworkContainer}>
-          <Text style={styles.title}>Parque Verde</Text>
-          <Text style={styles.subtitle}>Web Rádio</Text>
-
-          <View style={styles.shadows}>
-            {track.artwork ? (
-                <Image source={{uri: track.artwork}} style={styles.artwork} />
-            ): (
-                <Image source={cover()} style={styles.artwork} />
-              )
-            }
-          </View>
-        </View>
-        <Text style={styles.artistText}>{track.artist}</Text>
-        <Text style={styles.titleText}>{track.title}</Text>
-
-        <TouchableOpacity style={[
-            styles.playButton, playbackState?.state === State.Playing ? styles.playing : undefined
-        ]} onPress={togglePlayback} disabled={loading}>
-          {loading ? (
-              <ActivityIndicator color='#03ebff' />
-          ): (
-              <MaterialIcons
-                  style={[styles.iconStart, playbackState?.state === State.Playing ? styles.iconStop : undefined]}
-                  name={playbackState?.state === State.Playing? 'stop' : 'play-arrow'}
-                  color='#fff' size={40}
-              />
+      <ImageBackground source={IMAGES.background} resizeMode='cover' style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <StatusBar style="light" />
+          { appIsReady && (
+              <>
+                <Text style={styles.title}>Parque Verde</Text>
+                <Text style={styles.subtitle}>Web Rádio</Text>
+              </>
           )}
-        </TouchableOpacity>
 
-      </SafeAreaView>
-    </ImageBackground>
+          <View style={styles.artworkContainer}>
+            <View style={styles.shadows}>
+              {track.artwork ? (
+                  typeof track.artwork === 'string' && track.artwork.startsWith('http') ? (
+                      <Image
+                          source={{ uri: track.artwork }}
+                          style={styles.artwork}
+                          defaultSource={localArtwork.logo}
+                          onError={(e) => {
+                            console.warn('Erro ao carregar imagem remota:', e.nativeEvent.error);
+                            setTrack(prev => ({ ...prev, artwork: 'logo' }));
+                          }}
+                      />
+                  ) : (
+                      <Image source={localArtwork[track.artwork as LocalArtworkKey]} style={styles.artwork} />
+                  )
+              ) : (
+                  <Image source={localArtwork.logo} style={styles.artwork} />
+              )}
+            </View>
+          </View>
+
+          <Text style={styles.artistText}>{track.artist}</Text>
+          <Text style={styles.titleText}>{track.title}</Text>
+
+          <TouchableOpacity
+              style={[
+                styles.playButton,
+                playbackState?.state === State.Playing ? styles.playing : undefined,
+              ]}
+              onPress={togglePlayback}
+              disabled={loading}
+          >
+            {loading || playbackState?.state === State.Buffering ? (
+                <ActivityIndicator color='#03ebff' />
+            ) : (
+                <MaterialIcons
+                    style={[
+                      styles.iconStart,
+                      playbackState?.state === State.Playing ? styles.iconStop : undefined,
+                    ]}
+                    name={playbackState?.state === State.Playing ? 'stop' : 'play-arrow'}
+                    color='#fff'
+                    size={40}
+                />
+            )}
+          </TouchableOpacity>
+        </SafeAreaView>
+      </ImageBackground>
   );
 }
 
+// --- Função de busca de capa no iTunes ---
 async function fetchArtworkFromITunes(artist: string, title: string): Promise<string | null> {
   try {
     const query = encodeURIComponent(`${artist} ${title}`);
-    const url = `https://itunes.apple.com/search?term=${query}&limit=1&entity=song`;
+    const country = 'BR';
+    const url = `https://itunes.apple.com/search?term=${query}&media=music&entity=musicTrack&limit=1&country=${country}`;
     const response = await fetch(url);
 
     if (!response.ok) return null;
-
     const json = await response.json();
 
-    if(json.results?.length) {
-      const artworkUrl = json.results[0].artworkUrl100;
+    if (json.results?.length) {
+      const artworkUrl: string = json.results[0].artworkUrl100;
       return artworkUrl ? artworkUrl.replace('100x100bb', '600x600bb') : null;
     }
-
-  }catch(err) {
+  } catch (err) {
     console.warn('Erro ao buscar capa', err);
   }
   return null;
@@ -236,33 +296,31 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    top: 30,
-    bottom: 10,
-    paddingLeft: 20,
-    paddingRight: 20,
-    alignItems: 'center'
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   shadows: {
     overflow: 'visible',
     shadowColor: '#03ebff',
-    shadowOffset: {width: 10, height: -20},
+    shadowOffset: { width: 10, height: 20 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
     elevation: 10,
     borderRadius: 12,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: 'Michroma',
     color: "#03ebff",
-    marginTop: 30,
+    marginTop: 10,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
     fontFamily: 'Michroma',
     color: "#03ebff",
-    marginBottom: 30,
+    marginBottom: 20,
     textAlign: "center",
   },
   artworkContainer: {
@@ -275,14 +333,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "transparent",
     margin: 2
-  },
-  artworkPlaceholder: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  placeholderText: {
-    color: "#666",
-    marginTop: 8,
   },
   artistText: {
     fontSize: 16,
@@ -303,7 +353,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 42,
     borderColor: "rgba(3,235,255,0.7)",
-    borderStyle: "solid" ,
+    borderStyle: "solid",
     borderWidth: 2,
     backgroundColor: "transparent",
     alignItems: "center",
@@ -313,7 +363,7 @@ const styles = StyleSheet.create({
   playing: {
     backgroundColor: "rgba(3,235,255,0.6)",
     borderColor: "rgba(255,77,77,0.8)",
-    borderStyle: "solid" ,
+    borderStyle: "solid",
     borderWidth: 2,
   },
   iconStop: {
@@ -321,6 +371,5 @@ const styles = StyleSheet.create({
   },
   iconStart: {
     color: "#03ebff",
-  }
-
+  },
 });
