@@ -1,4 +1,6 @@
 import TrackPlayer, {AppKilledPlaybackBehavior, Capability} from "react-native-track-player";
+
+// imports locais
 import { STREAM_URL} from '../constants';
 
 export async function playerSetup (): Promise<void> {

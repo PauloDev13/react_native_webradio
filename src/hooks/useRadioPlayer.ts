@@ -3,8 +3,10 @@ import {AppState} from "react-native";
 import TrackPlayer, {Event, State, usePlaybackState, useTrackPlayerEvents} from "react-native-track-player";
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import {fetchArtworkFromITunes} from "../services/fetch_artwork";
-import {playerSetup} from "../services/player_setup";
+
+// imports locais
+import {fetchArtworkFromITunes} from "../services/fetchArtwork";
+import {playerSetup} from "../services/playerSetup";
 import {FONT_DEFAULT, LocalArtworkKey} from "../constants";
 
 // Impede que a splash screen desapareça antes das fontes carregarem
@@ -26,7 +28,6 @@ export function useRadioPlayer() {
     const playbackState = usePlaybackState();
     const [track, setTrack] = useState<TrackInfo>(initialTrack);
     const [loading, setLoading] = useState<boolean>(false);
-    const [isPlayingReady, setIsPlayingReady] = useState<boolean>(false);
     const [appIsReady, setAppIsReady] = useState<boolean>(false);
 
     // Carregamento das fontes
@@ -36,9 +37,7 @@ export function useRadioPlayer() {
         async function prepare() {
             try {
                 await SplashScreen.preventAutoHideAsync();
-                await Font.loadAsync({
-                    'Michroma': require(FONT_DEFAULT),
-                });
+                await Font.loadAsync(FONT_DEFAULT);
             } catch (err) {
                 console.warn('Erro ao carregar fontes:', err);
             } finally {
@@ -93,12 +92,11 @@ export function useRadioPlayer() {
         let isActive = true;
 
         (async () => {
-            const artworkRemote = await fetchArtworkFromITunes(track.artist, track.title);
-            let artwork: string | LocalArtworkKey | null = artworkRemote;
+            let artwork: string | LocalArtworkKey | null = await fetchArtworkFromITunes(track.artist, track.title);
 
             if (track.artist === 'Paulo Roberto') {
                 artwork = 'locucao';
-            } else if (track.title.startsWith('Web') || track.title === 'Hora' || track.title === 'Minuto') {
+            } else if (track.artist.startsWith('Web') || track.title === 'Hora' || track.title === 'Minuto') {
                 artwork = 'logo';
             }
 

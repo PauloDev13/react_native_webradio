@@ -2,6 +2,8 @@ import React from "react";
 import { ImageBackground } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// imports locais
 import { IMAGES } from "./src/constants";
 import { styles } from "./src/styles/appStyles";
 import { useRadioPlayer } from "./src/hooks/useRadioPlayer";
