@@ -46,7 +46,6 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        // 🔐 Você pode criar um bloco release com sua keystore real no futuro
     }
 
     buildTypes {
