@@ -19,8 +19,8 @@ type TrackInfo = {
 }
 
 const initialTrack: TrackInfo = {
-    artist: 'Web Rádio',
-    title: 'Web Rádio',
+    artist: 'Conectando...',
+    title: 'Aguarde...',
     artwork: 'logo',
 }
 
@@ -29,12 +29,13 @@ export function useRadioPlayer() {
     const [track, setTrack] = useState<TrackInfo>(initialTrack);
     const [loading, setLoading] = useState<boolean>(false);
     const [appIsReady, setAppIsReady] = useState<boolean>(false);
+    const [splashHidden, setSplashHidden] = useState<boolean>(false);
 
     // Carregamento das fontes
     useEffect(() => {
         let isMounted = true;
 
-        async function prepare() {
+        const loadFonts = async () => {
             try {
                 await SplashScreen.preventAutoHideAsync();
                 await Font.loadAsync(FONT_DEFAULT);
@@ -46,19 +47,30 @@ export function useRadioPlayer() {
                 }
             }
         }
+        // executa a função loadFonts
+        loadFonts();
 
-        prepare();
-        return () => { isMounted = false; };
+        return () => {
+            isMounted = false;
+        };
+
     }, []);
 
     // Inicialização do player
     useEffect(() => {
         if (!appIsReady) return;
-        let isMounted = true;
 
         const initPlayer = async () => {
+            // chama função que inicializa e toca o player
             await playerSetup();
-            if (isMounted) TrackPlayer.play();
+
+            // se o player está efetivamente tocando o áudio
+            if (playbackState.state === State.Playing && !splashHidden) {
+                // tira a splash screen da tela
+                await SplashScreen.hideAsync();
+                setSplashHidden(true);
+                console.log('setSplashHidden', splashHidden);
+            }
         };
 
         if (AppState.currentState === 'active') initPlayer();
@@ -68,21 +80,23 @@ export function useRadioPlayer() {
         });
 
         return () => {
-            isMounted = false;
             subscription.remove();
         };
-    }, [appIsReady]);
+
+    }, [appIsReady, splashHidden, playbackState.state]);
 
     // Metadados recebidos
     useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
+        console.log('useTrackPlayerEvents')
+
         if (event.metadata?.title) {
             const [maybeArtist, maybeTitle] = event.metadata.title.split(' - ');
             const artist = maybeArtist?.trim() || '';
             const title = maybeTitle?.trim() || '';
 
             // limpa artwork para forçar nova busca
-            setTrack({ artist, title, artwork: null });
-        }
+            setTrack({artist, title, artwork: null});
+        };
     });
 
     // Atualiza capa
@@ -91,24 +105,32 @@ export function useRadioPlayer() {
 
         let isActive = true;
 
-        (async () => {
+        const updateMetadata = async () =>  {
             let artwork: string | LocalArtworkKey | null = await fetchArtworkFromITunes(track.artist, track.title);
 
             if (track.artist === 'Paulo Roberto') {
                 artwork = 'locucao';
             } else if (track.artist.startsWith('Web') || track.title === 'Hora' || track.title === 'Minuto') {
                 artwork = 'logo';
-            }
+            };
 
             if (isActive) {
                 setTrack(prev => ({
                     ...prev,
-                    artwork: artwork || '',
+                    artwork: artwork || 'logo',
                 }));
-            }
-        })();
+
+                await TrackPlayer.updateNowPlayingMetadata({
+                    artist: track.artist, title: track.title, artwork: artwork!
+                });
+            };
+        };
+
+        // executa a função updateMetadata
+        updateMetadata();
 
         return () => { isActive = false };
+
     }, [track.artist, track.title]);
 
     // controles play/estop

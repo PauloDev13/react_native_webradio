@@ -1,32 +1,33 @@
-import {Image, View} from "react-native";
+import {View} from "react-native";
+import {Image} from 'expo-image';
 import React from "react";
 import {styles} from "../styles/appStyles";
-import {LOCAL_NETWORK, LocalArtworkKey} from "../constants";
+import {LOCAL_NETWORK} from "../constants";
 
 type Props = { artwork: string | null }
 
 export function Artwork({ artwork }: Props) {
-    const isArtworkNotNull = artwork;
     const isRemote = typeof artwork === "string" && artwork.startsWith('http');
+    const isLocalKey = typeof artwork === "string" && !isRemote;
+
+    const source = isRemote
+        ? {uri: artwork}
+        : LOCAL_NETWORK[isLocalKey ? (artwork as keyof typeof LOCAL_NETWORK) : 'logo']
+
     return (
         <View style={styles.artworkContainer}>
             <View style={styles.shadows}>
-                {isArtworkNotNull ? (
-                    isRemote ? (
-                        <Image
-                            source={{ uri: artwork }}
-                            style={styles.artwork}
-                            defaultSource={LOCAL_NETWORK.logo}
-                            onError={(e) => {
-                                console.warn('Erro ao carregar imagem remota:', e.nativeEvent.error);
-                            }}
-                        />
-                        ): (
-                        <Image source={LOCAL_NETWORK[artwork as LocalArtworkKey]} style={styles.artwork} />
-                    )
-                ) : (
-                    <Image source={LOCAL_NETWORK.logo} style={styles.artwork} />
-                )}
+                <Image
+                    source={source}
+                    style={styles.artwork}
+                    cachePolicy={'memory-disk'}
+                    contentFit={'cover'}
+                    placeholder={LOCAL_NETWORK.logo}
+                    onError={(e) => {
+                        console.warn('A capa não foi carregada: ', e.error ?? e);
+                    }}
+                    transition={500}
+                />
             </View>
         </View>
     );
