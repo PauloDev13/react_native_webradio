@@ -11,6 +11,7 @@ import { Header } from "./src/components/Header";
 import { Artwork } from "./src/components/Artwork";
 import { TrackInfo } from "./src/components/TrackInfo";
 import { PlayButton } from "./src/components/PlayButton";
+import {ConnectionModal} from "./src/components/ConnectionModal";
 
 export default function App() {
   const { track, playbackState, togglePlayback, loading, appIsReady } = useRadioPlayer();
@@ -19,6 +20,7 @@ export default function App() {
       <ImageBackground source={IMAGES.background} style={styles.container} resizeMode="cover">
         <SafeAreaView style={styles.safeArea}>
           <StatusBar style="light" />
+          <ConnectionModal/>
           {appIsReady && (
               <>
                 <Header />
