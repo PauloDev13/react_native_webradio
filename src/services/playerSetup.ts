@@ -1,7 +1,8 @@
-import TrackPlayer, {AppKilledPlaybackBehavior, Capability} from "react-native-track-player";
+import TrackPlayer, {AppKilledPlaybackBehavior, Event, Capability} from "react-native-track-player";
 
 // imports locais
 import { STREAM_URL} from '../constants';
+import {DeviceEventEmitter} from "react-native";
 
 let isPlayerInitialized: boolean = false;
 
@@ -26,9 +27,12 @@ export async function playerSetup (): Promise<void> {
             ],
             compactCapabilities: [Capability.Play, Capability.Pause],
         });
+
         await TrackPlayer.add({
             id: 'stream',
             url: STREAM_URL,
+            artist: 'Conectando...',
+            title: 'Conectando...',
         });
 
         // coloca o player para tocar
@@ -37,5 +41,15 @@ export async function playerSetup (): Promise<void> {
 
     } catch (err) {
         console.warn('Erro ao configurar player', err);
+        TrackPlayer.addEventListener(Event.PlaybackError, (event) => {
+            // console.error('Erro ao iniciar o player:', event.message);
+
+            DeviceEventEmitter.emit('STREAM_CONNECTION_ERROR', {
+                message: 'Clique no botão play para tentar novamente',
+                details: event.message,
+            });
+        });
+
+        isPlayerInitialized = false;
     }
 }

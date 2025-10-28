@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {AppState} from "react-native";
+import {AppState, DeviceEventEmitter} from "react-native";
 import TrackPlayer, {Event, State, usePlaybackState, useTrackPlayerEvents} from "react-native-track-player";
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -30,6 +30,8 @@ export function useRadioPlayer() {
     const [loading, setLoading] = useState<boolean>(false);
     const [appIsReady, setAppIsReady] = useState<boolean>(false);
     const [splashHidden, setSplashHidden] = useState<boolean>(false);
+    const [message, setMessage] = useState<string>('Sem conexão...');
+    const [visible, setVisible] = useState<boolean>(false);
 
     // Carregamento das fontes
     useEffect(() => {
@@ -87,8 +89,6 @@ export function useRadioPlayer() {
 
     // Metadados recebidos
     useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
-        console.log('useTrackPlayerEvents')
-
         if (event.metadata?.title) {
             const [maybeArtist, maybeTitle] = event.metadata.title.split(' - ');
             const artist = maybeArtist?.trim() || '';
@@ -152,5 +152,5 @@ export function useRadioPlayer() {
         }
     };
 
-    return { track, playbackState, togglePlayback, loading, appIsReady };
+    return { track, playbackState, togglePlayback, loading, appIsReady, visible, message, setVisible };
 }
