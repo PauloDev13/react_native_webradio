@@ -1,8 +1,8 @@
 import {StyleSheet, TouchableOpacity} from "react-native";
-import {ActivityIndicator, Modal, Text, View} from "react-native";
-import {MaterialIcons} from "@expo/vector-icons";
+import {Modal, Text, View} from "react-native";
 import React from "react";
 import TrackPlayer from "react-native-track-player";
+import {playerSetup} from "../services/playerSetup";
 
 type Props = {
   visible: boolean;
@@ -11,36 +11,31 @@ type Props = {
   setVisible: React.Dispatch<React.SetStateAction<boolean>>
 };
 
-export const ConnectionModal = ({visible, message, setVisible}: Props) => {
+export const ConnectionModal = ({ visible, message, setVisible}: Props) => {
 
-  const onCancel = async () => {
-    try {
-      await TrackPlayer.stop();
-    } catch (err) {
-      console.warn('Erro ao cancelar o player:', err);
-    } finally {
-      setVisible(false);
-    }
+  const onReconnect = async () => {
+    await playerSetup();
+    await TrackPlayer.play();
+    setVisible(false);
   }
-  
-  return (
-    <Modal visible={visible}  transparent animationType={'fade'} onRequestClose={() => setVisible(false) }>
-      <View style={styles.backdrop}>
-        <View style={styles.modal}>
-          <Text style={styles.title}>Sem Conexão</Text>
-          <Text style={styles.text} >{message}</Text>
+    return (
+      <Modal visible={visible} transparent animationType={'fade'} onRequestClose={() => setVisible(false)}>
+        <View style={styles.backdrop}>
+          <View style={styles.modal}>
+            <Text style={styles.title}>Sem Conexão</Text>
+            <Text style={styles.text} >{message}</Text>
 
-          <View style={styles.buttons}>
-            <View style={styles.btn}>
-              <TouchableOpacity onPress={onCancel}>
-                <Text>OK</Text>
-              </TouchableOpacity>
+            <View style={styles.buttons}>
+              <View style={styles.btn}>
+                <TouchableOpacity onPress={onReconnect}>
+                  <Text style={{color: '#fff'}}>OK</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </Modal>
-  );
+      </Modal>
+    );
 };
 
 const styles = StyleSheet.create({
@@ -59,12 +54,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: 'Michroma',
+    color: "#fff",
     fontWeight: '700',
     marginBottom: 8,
   },
   text: {
     fontSize: 14,
     fontFamily: 'Michroma',
+    color: "#fff",
     marginBottom: 12,
   },
   buttons: {

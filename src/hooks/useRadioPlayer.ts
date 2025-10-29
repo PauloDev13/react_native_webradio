@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {AppState, DeviceEventEmitter} from "react-native";
+import {AppState} from "react-native";
 import TrackPlayer, {Event, State, usePlaybackState, useTrackPlayerEvents} from "react-native-track-player";
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -71,7 +71,6 @@ export function useRadioPlayer() {
                 // tira a splash screen da tela
                 await SplashScreen.hideAsync();
                 setSplashHidden(true);
-                console.log('setSplashHidden', splashHidden);
             }
         };
 
@@ -81,11 +80,13 @@ export function useRadioPlayer() {
             if (state === 'active') initPlayer();
         });
 
+
         return () => {
             subscription.remove();
         };
 
-    }, [appIsReady, splashHidden, playbackState.state]);
+    }, [appIsReady, splashHidden]);
+    // }, [appIsReady, splashHidden, playbackState.state]);
 
     // Metadados recebidos
     useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
@@ -98,6 +99,13 @@ export function useRadioPlayer() {
             setTrack({artist, title, artwork: null});
         };
     });
+
+    useTrackPlayerEvents([Event.PlaybackState], async (event) =>{
+        if (event.state === 'ended' || event.state === 'error') {
+            setMessage('Servidor offline');
+            setVisible(true);
+        }
+    })
 
     // Atualiza capa
     useEffect(() => {
