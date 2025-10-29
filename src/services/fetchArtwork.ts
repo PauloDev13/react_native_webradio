@@ -1,5 +1,6 @@
-// --- Função de busca de capa no iTunes ---
-export async function fetchArtworkFromITunes(artist: string, title: string): Promise<string | null> {
+// Função de busca de capa no iTunes
+export async function fetchArtworkFromITunes(
+    artist: string, title: string): Promise<string | null> {
     try {
         const query = encodeURIComponent(`${artist} ${title}`);
         const country = 'BR';

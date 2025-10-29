@@ -1,10 +1,12 @@
 import { ActivityIndicator, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import {PlaybackState, State} from "react-native-track-player";
+
+// imports locais
 import { styles } from "../styles/appStyles";
-import { State } from "react-native-track-player";
 
 type Props = {
-    state: any;
+    state:  PlaybackState | { state: undefined };
     loading: boolean;
     onPress: () => void;
 };
@@ -19,7 +21,8 @@ export function PlayButton({ state, loading, onPress }: Props) {
             onPress={onPress}
             disabled={loading}
         >
-            {loading || state?.state === State.Buffering ? (
+            {
+                loading || state?.state === State.Buffering ? (
                 <ActivityIndicator color="#03ebff" />
             ) : (
                 <MaterialIcons

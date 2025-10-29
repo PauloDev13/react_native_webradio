@@ -5,6 +5,7 @@ import { STREAM_URL} from '../constants';
 
 let isPlayerInitialized: boolean = false;
 
+// Função que inicializa o player quando o app é aberto
 export async function playerSetup (): Promise<void> {
     if (isPlayerInitialized) {
         console.log('Player já iniciado');
@@ -15,7 +16,8 @@ export async function playerSetup (): Promise<void> {
         await TrackPlayer.setupPlayer();
         await TrackPlayer.updateOptions({
             android:{
-                appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+                appKilledPlaybackBehavior:
+                AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
             },
             capabilities: [
                 Capability.Play,
@@ -30,7 +32,7 @@ export async function playerSetup (): Promise<void> {
             id: 'stream',
             url: STREAM_URL,
             artist: 'Conectando...',
-            title: 'Conectando...',
+            title: 'Aguarde...',
         });
 
         // coloca o player para tocar

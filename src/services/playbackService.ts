@@ -1,6 +1,6 @@
 import TrackPlayer, { Event } from 'react-native-track-player';
 
-export const playbackService = async () => {
+export const playbackService = async (): Promise<void> => {
     // Estes eventos continuam funcionando mesmo em segundo plano
     TrackPlayer.addEventListener(Event.RemotePlay, () => TrackPlayer.play());
     TrackPlayer.addEventListener(Event.RemotePause, () => TrackPlayer.pause());

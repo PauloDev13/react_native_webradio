@@ -1,8 +1,8 @@
 import {Modal, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import React from "react";
 import TrackPlayer, {State} from "react-native-track-player";
-// import {STREAM_URL} from "../constants";
-import {playerSetup} from "../services/playerSetup";
+
+// imports locais
 import {STREAM_URL} from "../constants";
 
 type Props = {
@@ -23,7 +23,7 @@ export const ConnectionModal = (
           id: 'stream',
           url: STREAM_URL,
           artist: 'Conectando...',
-          title: 'Conectando...',
+          title: 'Aguarde...',
         });
 
         await TrackPlayer.play();
@@ -46,7 +46,6 @@ export const ConnectionModal = (
           <View style={styles.modal}>
             <Text style={styles.title}>WR Parque Verde</Text>
             <Text style={styles.text} >{message}</Text>
-
             <View style={styles.buttons}>
                 <TouchableOpacity
                   onPress={onReconnect}

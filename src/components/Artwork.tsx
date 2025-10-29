@@ -1,6 +1,8 @@
 import {View} from "react-native";
 import {Image} from 'expo-image';
 import React from "react";
+
+// imports locais
 import {styles} from "../styles/appStyles";
 import {LOCAL_NETWORK} from "../constants";
 

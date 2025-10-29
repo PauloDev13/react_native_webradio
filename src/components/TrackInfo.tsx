@@ -1,4 +1,6 @@
 import { Text, View } from "react-native";
+
+// imports locais
 import { styles } from "../styles/appStyles";
 
 type Props = { artist: string; title: string };
