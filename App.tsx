@@ -14,13 +14,13 @@ import { PlayButton } from "./src/components/PlayButton";
 import {ConnectionModal} from "./src/components/ConnectionModal";
 
 export default function App() {
-  const { track, playbackState, togglePlayback, loading, appIsReady, visible, message, setVisible } = useRadioPlayer();
+  const { track, playbackState, togglePlayback, loading, appIsReady, visible, message, setVisible, statePlayer } = useRadioPlayer();
 
   return (
       <ImageBackground source={IMAGES.background} style={styles.container} resizeMode="cover">
         <SafeAreaView style={styles.safeArea}>
           <StatusBar style="light" />
-          <ConnectionModal visible={visible} message={message} setVisible={setVisible} loading={false} />
+          <ConnectionModal visible={visible} message={message} setVisible={setVisible} statePlayer={statePlayer}  />
           {appIsReady && (
               <>
                 <Header />

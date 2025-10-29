@@ -6,7 +6,6 @@ import { STREAM_URL} from '../constants';
 let isPlayerInitialized: boolean = false;
 
 export async function playerSetup (): Promise<void> {
-
     if (isPlayerInitialized) {
         console.log('Player já iniciado');
         return;

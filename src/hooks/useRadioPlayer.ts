@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {AppState} from "react-native";
+import {AppState, AppStateStatus} from "react-native";
 import TrackPlayer, {Event, State, usePlaybackState, useTrackPlayerEvents} from "react-native-track-player";
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -32,6 +32,7 @@ export function useRadioPlayer() {
     const [splashHidden, setSplashHidden] = useState<boolean>(false);
     const [message, setMessage] = useState<string>('Sem conexão...');
     const [visible, setVisible] = useState<boolean>(false);
+    const [statePlayer, setStatePlayer] = useState(State.Stopped);
 
     // Carregamento das fontes
     useEffect(() => {
@@ -76,7 +77,7 @@ export function useRadioPlayer() {
 
         if (AppState.currentState === 'active') initPlayer();
 
-        const subscription = AppState.addEventListener('change', (state) => {
+        const subscription = AppState.addEventListener('change', (state: AppStateStatus) => {
             if (state === 'active') initPlayer();
         });
 
@@ -101,10 +102,18 @@ export function useRadioPlayer() {
     });
 
     useTrackPlayerEvents([Event.PlaybackState], async (event) =>{
-        if (event.state === 'ended' || event.state === 'error') {
-            setMessage('Servidor offline');
+        if (event.state === State.Ended) {
+            setStatePlayer(State.Ended);
+            setMessage('Conexão perdida...');
             setVisible(true);
         }
+
+        if (event.state === State.Error) {
+            setStatePlayer(State.Error);
+            setMessage('Conexão perdida...');
+            setVisible(true);
+        }
+
     })
 
     // Atualiza capa
@@ -160,5 +169,5 @@ export function useRadioPlayer() {
         }
     };
 
-    return { track, playbackState, togglePlayback, loading, appIsReady, visible, message, setVisible };
+    return { track, playbackState, togglePlayback, loading, appIsReady, visible, message, setVisible, statePlayer };
 }

@@ -61,8 +61,8 @@ export const styles = StyleSheet.create({
     },
     playButton: {
         marginTop: 24,
-        width: 64,
-        height: 64,
+        width: 50,
+        height: 50,
         borderRadius: 42,
         borderColor: "rgba(3,235,255,0.7)",
         borderStyle: "solid",

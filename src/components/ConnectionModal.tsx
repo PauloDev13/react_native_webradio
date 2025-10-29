@@ -1,36 +1,58 @@
-import {StyleSheet, TouchableOpacity} from "react-native";
-import {Modal, Text, View} from "react-native";
+import {Modal, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import React from "react";
-import TrackPlayer from "react-native-track-player";
+import TrackPlayer, {State} from "react-native-track-player";
+// import {STREAM_URL} from "../constants";
 import {playerSetup} from "../services/playerSetup";
+import {STREAM_URL} from "../constants";
 
 type Props = {
   visible: boolean;
-  loading: boolean;
+  statePlayer: any;
   message: string | null;
   setVisible: React.Dispatch<React.SetStateAction<boolean>>
 };
 
-export const ConnectionModal = ({ visible, message, setVisible}: Props) => {
-
+export const ConnectionModal = (
+  {visible, message, setVisible, statePlayer}: Props
+) => {
   const onReconnect = async () => {
-    await playerSetup();
-    await TrackPlayer.play();
-    setVisible(false);
+    if (statePlayer === State.Ended) {
+      try {
+        await TrackPlayer.reset();
+        await TrackPlayer.add({
+          id: 'stream',
+          url: STREAM_URL,
+          artist: 'Conectando...',
+          title: 'Conectando...',
+        });
+
+        await TrackPlayer.play();
+      } catch (e) {
+        console.error('Erro ao reconectar servidor', e);
+      }
+      setVisible(false);
+    }
+
+    if (statePlayer === 'error') {
+      await TrackPlayer.play();
+      setVisible(false);
+    }
+
   }
     return (
-      <Modal visible={visible} transparent animationType={'fade'} onRequestClose={() => setVisible(false)}>
+      <Modal visible={visible} transparent animationType={'fade'}
+             onRequestClose={() => setVisible(false)}>
         <View style={styles.backdrop}>
           <View style={styles.modal}>
-            <Text style={styles.title}>Sem Conexão</Text>
+            <Text style={styles.title}>WR Parque Verde</Text>
             <Text style={styles.text} >{message}</Text>
 
             <View style={styles.buttons}>
-              <View style={styles.btn}>
-                <TouchableOpacity onPress={onReconnect}>
-                  <Text style={{color: '#fff'}}>OK</Text>
+                <TouchableOpacity
+                  onPress={onReconnect}
+                  style={styles.btn}>
+                  <Text style={styles.textButton}>Conectar</Text>
                 </TouchableOpacity>
-              </View>
             </View>
           </View>
         </View>
@@ -41,28 +63,30 @@ export const ConnectionModal = ({ visible, message, setVisible}: Props) => {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,11,17,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   modal: {
-    width: '80%',
-    backgroundColor: 'rgba(0,11,17,0.8)',
+    width: '70%',
+    borderWidth: 1,
+    borderColor: 'rgba(3,235,255,0.6)',
+    backgroundColor: 'rgba(0,11,17,0.6)',
     borderRadius: 12,
     padding: 18,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Michroma',
-    color: "#fff",
-    fontWeight: '700',
+    color: "#03ebff",
+    textAlign: "center",
     marginBottom: 8,
   },
   text: {
     fontSize: 14,
     fontFamily: 'Michroma',
     color: "#fff",
-    marginBottom: 12,
+    marginBottom: 20,
   },
   buttons: {
     flexDirection: 'row',
@@ -70,6 +94,19 @@ const styles = StyleSheet.create({
   },
   btn: {
     flex: 1,
-    marginHorizontal: 6,
+    height: 35,
+    width: 90,
+    borderRadius: 8,
+    borderStyle: 'solid',
+    borderWidth: 2,
+    borderColor: "rgba(3,235,255,0.6)",
+    backgroundColor: "transparent",
+    alignItems: "center"
+
   },
+  textButton: {
+    color: '#03ebff',
+    fontFamily: 'Michroma',
+    fontSize: 14,
+  }
 });

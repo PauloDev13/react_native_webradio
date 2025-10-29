@@ -27,9 +27,9 @@ export function PlayButton({ state, loading, onPress }: Props) {
                         styles.iconStart,
                         state?.state === State.Playing ? styles.iconStop : undefined,
                     ]}
-                    name={state?.state === State.Playing ? "stop" : "play-arrow"}
+                    name={state?.state === State.Playing ? "pause" : "play-arrow"}
                     color="#fff"
-                    size={40}
+                    size={30}
                 />
             )}
         </TouchableOpacity>
