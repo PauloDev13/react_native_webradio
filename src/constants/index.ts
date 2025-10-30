@@ -1,6 +1,6 @@
 export const STREAM_URL: string = "https://centova2.ipstm.net/proxy/bmjceqts/stream";
 
-export const FONT_DEFAULT:{ Michroma: NodeJS.Require | string } = {
+export const FONT_DEFAULT = {
     Michroma: require('../../assets/fonts/Michroma-Regular.ttf')
 };
 
@@ -12,6 +12,6 @@ export const LOCAL_NETWORK: Record<LocalArtworkKey, any> = {
     logo: require('../../assets/images/logo.png'),
 }
 
-export const IMAGES: {background: NodeJS.Require  | any} = {
+export const IMAGES = {
     background: require('../../assets/images/background.png'),
 }
