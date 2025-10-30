@@ -1,20 +1,18 @@
-import {Modal, StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import React from "react";
-import TrackPlayer, {State} from "react-native-track-player";
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import TrackPlayer, { State } from 'react-native-track-player';
 
 // imports locais
-import {STREAM_URL} from "../constants";
+import { STREAM_URL } from '../constants';
 
 type Props = {
   visible: boolean;
   statePlayer: any;
   message: string | null;
-  setVisible: React.Dispatch<React.SetStateAction<boolean>>
+  setVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const ConnectionModal = (
-  {visible, message, setVisible, statePlayer}: Props
-) => {
+export const ConnectionModal = ({ visible, message, setVisible, statePlayer }: Props) => {
   const onReconnect = async () => {
     if (statePlayer === State.Ended) {
       try {
@@ -37,26 +35,27 @@ export const ConnectionModal = (
       await TrackPlayer.play();
       setVisible(false);
     }
-
-  }
-    return (
-      <Modal visible={visible} transparent animationType={'fade'}
-             onRequestClose={() => setVisible(false)}>
-        <View style={styles.backdrop}>
-          <View style={styles.modal}>
-            <Text style={styles.title}>WR Parque Verde</Text>
-            <Text style={styles.text} >{message}</Text>
-            <View style={styles.buttons}>
-                <TouchableOpacity
-                  onPress={onReconnect}
-                  style={styles.btn}>
-                  <Text style={styles.textButton}>Conectar</Text>
-                </TouchableOpacity>
-            </View>
+  };
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType={'fade'}
+      onRequestClose={() => setVisible(false)}
+    >
+      <View style={styles.backdrop}>
+        <View style={styles.modal}>
+          <Text style={styles.title}>WR Parque Verde</Text>
+          <Text style={styles.text}>{message}</Text>
+          <View style={styles.buttons}>
+            <TouchableOpacity onPress={onReconnect} style={styles.btn}>
+              <Text style={styles.textButton}>Conectar</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-    );
+      </View>
+    </Modal>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -77,14 +76,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontFamily: 'Michroma',
-    color: "#03ebff",
-    textAlign: "center",
+    color: '#03ebff',
+    textAlign: 'center',
     marginBottom: 8,
   },
   text: {
     fontSize: 14,
     fontFamily: 'Michroma',
-    color: "#fff",
+    color: '#fff',
     marginBottom: 20,
   },
   buttons: {
@@ -98,14 +97,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderStyle: 'solid',
     borderWidth: 2,
-    borderColor: "rgba(3,235,255,0.6)",
-    backgroundColor: "transparent",
-    alignItems: "center"
-
+    borderColor: 'rgba(3,235,255,0.6)',
+    backgroundColor: 'transparent',
+    alignItems: 'center',
   },
   textButton: {
     color: '#03ebff',
     fontFamily: 'Michroma',
     fontSize: 14,
-  }
+  },
 });
