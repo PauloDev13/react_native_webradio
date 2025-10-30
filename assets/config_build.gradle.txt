@@ -235,3 +235,50 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+
+===================================================================================================
+ARQUIVO android/app/proguard-rules.pro
+
+
+# Impede remoção de classes do React Native
+-keep class com.facebook.react.** { *; }
+-keep class com.facebook.hermes.** { *; }
+-keep class com.facebook.jni.** { *; }
+
+# Mantém o pipeline de imagens (Fresco / OkHttp)
+-keep class com.facebook.imagepipeline.** { *; }
+-keep class com.facebook.drawee.** { *; }
+-keep class com.facebook.imagepipeline.memory.** { *; }
+-keep class com.facebook.imagepipeline.cache.** { *; }
+-keep class com.facebook.imagepipeline.producers.** { *; }
+-keep class com.facebook.imagepipeline.decoder.** { *; }
+-keep class com.facebook.imagepipeline.core.** { *; }
+-keep class com.facebook.imagepipeline.listener.** { *; }
+-keep class com.facebook.imagepipeline.request.** { *; }
+
+# Mantém classes do OkHttp usadas internamente
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
+-dontwarn okhttp3.**
+
+# Mantém código usado pelo React Native em runtime (reflection)
+-keepattributes *Annotation*, InnerClasses
+-keep class * extends java.lang.reflect.Type
+-keepclassmembers class * {
+    @com.facebook.react.bridge.ReactMethod <methods>;
+}
+
+# Mantém assets e resources
+-keepclassmembers class **.R$* {
+    public static <fields>;
+}
+
+# Expo / Image modules (se estiver usando expo-image)
+-keep class expo.modules.image.** { *; }
+-keep class expo.modules.kotlin.** { *; }
+-keep class expo.modules.core.** { *; }
+
+# Se usar react-native-fast-image
+-keep class com.dylanvann.fastimage.** { *; }
+
