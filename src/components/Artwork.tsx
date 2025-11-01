@@ -31,6 +31,7 @@ export function Artwork({ artwork }: Props) {
             console.warn('A capa não foi carregada: ', e.error ?? e);
           }}
           transition={500}
+          priority={'high'}
         />
       </View>
     </View>
