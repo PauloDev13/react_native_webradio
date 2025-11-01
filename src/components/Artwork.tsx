@@ -1,6 +1,6 @@
-import { View } from 'react-native';
 import { Image } from 'expo-image';
 import React from 'react';
+import { View } from 'react-native';
 
 // imports locais
 import { styles } from '../styles/appStyles';
@@ -14,7 +14,9 @@ export function Artwork({ artwork }: Props) {
 
   const source = isRemote
     ? { uri: artwork }
-    : LOCAL_NETWORK[isLocalKey ? (artwork as keyof typeof LOCAL_NETWORK) : 'logo'];
+    : LOCAL_NETWORK[
+        isLocalKey ? (artwork as keyof typeof LOCAL_NETWORK) : 'logo'
+      ];
 
   return (
     <View style={styles.artworkContainer}>

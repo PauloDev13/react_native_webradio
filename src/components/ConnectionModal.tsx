@@ -12,7 +12,12 @@ type Props = {
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const ConnectionModal = ({ visible, message, setVisible, statePlayer }: Props) => {
+export const ConnectionModal = ({
+  visible,
+  message,
+  setVisible,
+  statePlayer,
+}: Props) => {
   const onReconnect = async () => {
     if (statePlayer === State.Ended) {
       try {

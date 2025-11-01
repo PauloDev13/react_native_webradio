@@ -4,6 +4,8 @@
     "node": true
   },
   "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
     "airbnb",
     "airbnb/hooks",
@@ -16,6 +18,41 @@
   },
   "plugins": [
     "react",
-    "react-native"
-  ]
+    "react-native",
+    "eslint-plugin-import-helpers"
+  ],
+  "rules": {
+    // permite escrever jsx em arquivo .js
+    "react/jsx-filename-extension": [1, {"extensions":  [".js", ".jsx"]}],
+    "no-use-before-define": ["error", {"variables":  false}],
+    // ajustar para não usar erros com react-navigation
+    "react/prop-types": ["error", {"ignore": ["navigator", "navigation.navigate"]}],
+    // ajusta a ordenação dos imports
+    "import-helpers/order-imports": [
+      "warn",
+      {
+        "newlinesBetween": "always",
+        "groups": [
+          [
+            "/^react/"
+          ],
+          [
+            "module"
+          ],
+          [
+            "/^~//"
+          ],
+          [
+            "parent",
+            "sibling",
+            "index"
+          ]
+        ],
+        "alphabetize": {
+          "order": "asc",
+          "ignoreCase": true
+        }
+      }
+    ]
+  }
 }
