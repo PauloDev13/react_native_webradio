@@ -4,33 +4,25 @@ import { View } from 'react-native';
 
 // imports locais
 import { styles } from '../styles/appStyles';
-import { LOCAL_NETWORK } from '../constants';
+import { CLOUDINARY_IMAGE } from '../constants';
 
 type Props = { artwork: string | null };
 
 export function Artwork({ artwork }: Props) {
-  const isRemote = typeof artwork === 'string' && artwork.startsWith('http');
-  const isLocalKey = typeof artwork === 'string' && !isRemote;
-
-  const source = isRemote
-    ? { uri: artwork }
-    : LOCAL_NETWORK[
-        isLocalKey ? (artwork as keyof typeof LOCAL_NETWORK) : 'logo'
-      ];
-
   return (
     <View style={styles.artworkContainer}>
       <View style={styles.shadows}>
         <Image
-          source={source}
+          key={artwork!}
+          source={{ uri: artwork! }}
           style={styles.artwork}
-          cachePolicy={'memory-disk'}
+          cachePolicy={'disk'}
           contentFit={'cover'}
-          placeholder={LOCAL_NETWORK.logo}
+          placeholder={{ uri: CLOUDINARY_IMAGE.logo }}
           onError={(e) => {
             console.warn('A capa não foi carregada: ', e.error ?? e);
           }}
-          transition={500}
+          transition={250}
           priority={'high'}
         />
       </View>

@@ -10,6 +10,7 @@ export async function fetchArtworkFromITunes(
     const response = await fetch(url);
 
     if (!response.ok) return null;
+
     const json = await response.json();
 
     if (json.results?.length) {

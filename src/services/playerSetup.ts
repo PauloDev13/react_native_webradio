@@ -36,6 +36,7 @@ export async function playerSetup(): Promise<void> {
       url: STREAM_URL,
       artist: 'Conectando...',
       title: 'Aguarde...',
+      artwork: undefined,
     });
 
     // coloca o player para tocar

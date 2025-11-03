@@ -12,7 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 // imports locais
 import { fetchArtworkFromITunes } from '../services/fetchArtwork';
 import { playerSetup } from '../services/playerSetup';
-import { FONT_DEFAULT, LocalArtworkKey } from '../constants';
+import { CLOUDINARY_IMAGE, FONT_DEFAULT, LocalArtworkKey } from '../constants';
 
 // Impede que a splash screen desapareça antes das fontes carregarem
 SplashScreen.preventAutoHideAsync();
@@ -26,7 +26,7 @@ type TrackInfo = {
 const initialTrack: TrackInfo = {
   artist: 'Conectando...',
   title: 'Aguarde...',
-  artwork: 'logo',
+  artwork: null,
 };
 
 export function useRadioPlayer() {
@@ -58,6 +58,8 @@ export function useRadioPlayer() {
     // executa a função loadFonts
     loadFonts();
 
+    console.log('01 - SETOU AS FONTES');
+
     return () => {
       isMounted = false;
     };
@@ -81,6 +83,8 @@ export function useRadioPlayer() {
       }
     );
 
+    console.log('02 - INICIOU O PLAYER');
+
     return () => {
       subscription.remove();
     };
@@ -88,13 +92,40 @@ export function useRadioPlayer() {
 
   // Metadados recebidos
   useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
+    let _artwork: string | LocalArtworkKey | null = null;
+
     if (event.metadata?.title) {
       const [maybeArtist, maybeTitle] = event.metadata.title.split(' - ');
       const artist = maybeArtist?.trim() || '';
       const title = maybeTitle?.trim() || '';
 
-      // limpa artwork para forçar nova busca
-      setTrack({ artist, title, artwork: null });
+      if (track.title !== title) {
+        _artwork = await fetchArtworkFromITunes(artist, title);
+
+        console.log('ARTWORK', _artwork);
+
+        // se o nome do artista é igual a 'Paulo Roberto',
+        // exibe a foto do locutor
+        if (artist === 'Paulo Roberto') {
+          _artwork = CLOUDINARY_IMAGE.locucao;
+        } else if (
+          artist.startsWith('Web') ||
+          title === 'Hora' ||
+          title === 'Minuto'
+        ) {
+          _artwork = CLOUDINARY_IMAGE.logo;
+        } else if (_artwork === null) {
+          _artwork = CLOUDINARY_IMAGE.logo;
+        }
+
+        setTrack({ artist, title, artwork: _artwork });
+
+        await TrackPlayer.updateNowPlayingMetadata({
+          artist,
+          title,
+          artwork: _artwork!,
+        });
+      }
     }
   });
 
@@ -108,6 +139,7 @@ export function useRadioPlayer() {
     // se o evento do estado é Ended (o player está em execução
     // com o stream online e ele fica offline
     if (event.state === State.Ended) {
+      console.error('ERRO ENDED');
       // abtribui o estado ao setStatePlayer
       setStatePlayer(State.Ended);
       // abtribui mensagem ao setMessage
@@ -119,61 +151,13 @@ export function useRadioPlayer() {
     // se o evento do estado é Error (stream já está
     // offline quando o player é aberto)
     if (event.state === State.Error) {
+      console.error('ERRO ENDED');
       setStatePlayer(State.Error);
       setMessage('Conexão perdida...');
       setVisible(true);
     }
+    console.log('04 - TEST0U A CONEXÃO');
   });
-
-  // Atualiza capa
-  useEffect(() => {
-    if (!track.artist || !track.title) return;
-
-    let isActive = true;
-
-    const updateMetadata = async () => {
-      let artwork: string | LocalArtworkKey | null =
-        await fetchArtworkFromITunes(track.artist, track.title);
-
-      // se o nome do artista é igual a 'Paulo Roberto',
-      // exibe a foto do locutor
-      if (track.artist === 'Paulo Roberto') {
-        artwork = 'locucao';
-      } else if (
-        track.artist.startsWith('Web') ||
-        track.title === 'Hora' ||
-        track.title === 'Minuto'
-      ) {
-        artwork = 'logo';
-      }
-      // se isActive é igual a true, usa setTrack
-      // para atualizar os dados da trilha
-      if (isActive) {
-        setTrack((prev) => ({
-          ...prev,
-          artwork: artwork || 'logo',
-        }));
-
-        // atualiza também os dados da trilha que está
-        // em execução o player que roda em background
-        await TrackPlayer.updateNowPlayingMetadata({
-          artist: track.artist,
-          title: track.title,
-          artwork: artwork!,
-        });
-      }
-    };
-
-    // executa a função updateMetadata
-    updateMetadata();
-
-    return () => {
-      isActive = false;
-    };
-
-    // atualiza o hook useEffects toda a vez que
-    // os nomes do artista e música mudarem
-  }, [track.artist, track.title]);
 
   // controles play/estop
   const togglePlayback = async () => {
