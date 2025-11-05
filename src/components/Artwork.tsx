@@ -1,10 +1,11 @@
-import { Image } from 'expo-image';
 import React from 'react';
 import { View } from 'react-native';
 
+import { Image } from 'expo-image';
+
 // imports locais
-import { styles } from '../styles/appStyles';
 import { CLOUDINARY_IMAGE } from '../constants';
+import { styles } from '../styles/appStyles';
 
 type Props = { artwork: string | null };
 

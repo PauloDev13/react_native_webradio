@@ -1,17 +1,18 @@
 import React from 'react';
 import { ImageBackground } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { StatusBar } from 'expo-status-bar';
+
 // imports locais
-import { IMAGES } from './src/constants';
-import { styles } from './src/styles/appStyles';
-import { useRadioPlayer } from './src/hooks/useRadioPlayer';
-import { Header } from './src/components/Header';
 import { Artwork } from './src/components/Artwork';
-import { TrackInfo } from './src/components/TrackInfo';
-import { PlayButton } from './src/components/PlayButton';
 import { ConnectionModal } from './src/components/ConnectionModal';
+import { Header } from './src/components/Header';
+import { PlayButton } from './src/components/PlayButton';
+import { TrackInfo } from './src/components/TrackInfo';
+import { IMAGES } from './src/constants';
+import { useRadioPlayer } from './src/hooks/useRadioPlayer';
+import { styles } from './src/styles/appStyles';
 
 export default function App() {
   const {

@@ -1,6 +1,7 @@
 import { ActivityIndicator, TouchableOpacity } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { PlaybackState, State } from 'react-native-track-player';
+
+import { MaterialIcons } from '@expo/vector-icons';
 
 // imports locais
 import { styles } from '../styles/appStyles';

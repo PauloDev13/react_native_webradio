@@ -6,13 +6,14 @@ import TrackPlayer, {
   usePlaybackState,
   useTrackPlayerEvents,
 } from 'react-native-track-player';
+
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
 // imports locais
+import { CLOUDINARY_IMAGE, FONT_DEFAULT, LocalArtworkKey } from '../constants';
 import { fetchArtworkFromITunes } from '../services/fetchArtwork';
 import { playerSetup } from '../services/playerSetup';
-import { CLOUDINARY_IMAGE, FONT_DEFAULT, LocalArtworkKey } from '../constants';
 
 // Impede que a splash screen desapareça antes das fontes carregarem
 SplashScreen.preventAutoHideAsync();
@@ -58,8 +59,6 @@ export function useRadioPlayer() {
     // executa a função loadFonts
     loadFonts();
 
-    console.log('01 - SETOU AS FONTES');
-
     return () => {
       isMounted = false;
     };
@@ -83,8 +82,6 @@ export function useRadioPlayer() {
       }
     );
 
-    console.log('02 - INICIOU O PLAYER');
-
     return () => {
       subscription.remove();
     };
@@ -101,8 +98,6 @@ export function useRadioPlayer() {
 
       if (track.title !== title) {
         _artwork = await fetchArtworkFromITunes(artist, title);
-
-        console.log('ARTWORK', _artwork);
 
         // se o nome do artista é igual a 'Paulo Roberto',
         // exibe a foto do locutor
@@ -156,7 +151,6 @@ export function useRadioPlayer() {
       setMessage('Conexão perdida...');
       setVisible(true);
     }
-    console.log('04 - TEST0U A CONEXÃO');
   });
 
   // controles play/estop
