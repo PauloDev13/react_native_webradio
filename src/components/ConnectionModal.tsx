@@ -4,6 +4,7 @@ import TrackPlayer, { State } from 'react-native-track-player';
 
 // imports locais
 import { STREAM_URL } from '../constants';
+import { useModal } from '../store/modal';
 
 type Props = {
   visible: boolean;
@@ -12,12 +13,8 @@ type Props = {
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const ConnectionModal = ({
-  visible,
-  message,
-  setVisible,
-  statePlayer,
-}: Props) => {
+export const ConnectionModal = () => {
+  const { visible, message, statePlayer, setVisible } = useModal();
   const onReconnect = async () => {
     if (statePlayer === State.Ended) {
       try {
@@ -42,12 +39,7 @@ export const ConnectionModal = ({
     }
   };
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType={'fade'}
-      onRequestClose={() => setVisible(false)}
-    >
+    <Modal visible={visible} transparent animationType={'fade'}>
       <View style={styles.backdrop}>
         <View style={styles.modal}>
           <Text style={styles.title}>WR Parque Verde</Text>
