@@ -26,8 +26,8 @@ type TrackInfo = {
 };
 
 const initialTrack: TrackInfo = {
-  artist: 'Conectando...',
-  title: 'Aguarde...',
+  artist: 'WR Parque Verde...',
+  title: 'Conectando...',
   artwork: null,
 };
 
@@ -38,9 +38,6 @@ export function useRadioPlayer() {
   const [loading, setLoading] = useState<boolean>(false);
   const [appIsReady, setAppIsReady] = useState<boolean>(false);
   const [splashHidden, setSplashHidden] = useState<boolean>(false);
-  // const [message, setMessage] = useState<string>('Sem conexão...');
-  // const [visible, setVisible] = useState<boolean>(false);
-  // const [statePlayer, setStatePlayer] = useState(State.Stopped);
 
   // Carregamento das fontes
   useEffect(() => {
@@ -182,9 +179,5 @@ export function useRadioPlayer() {
     togglePlayback,
     loading,
     appIsReady,
-    // visible,
-    // message,
-    // setVisible,
-    // statePlayer,
   };
 }

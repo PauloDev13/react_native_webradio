@@ -2,7 +2,7 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import TrackPlayer, { State } from 'react-native-track-player';
 
 // imports locais
-import { STREAM_URL } from '../constants';
+import { trackPlayerAdd } from '../services/trackPlayerAdd';
 import { useModalStore } from '../store/./modalStore';
 
 export const ConnectionModal = () => {
@@ -12,12 +12,15 @@ export const ConnectionModal = () => {
     if (statePlayer === State.Ended) {
       try {
         await TrackPlayer.reset();
-        await TrackPlayer.add({
-          id: 'stream',
-          url: STREAM_URL,
-          artist: 'Conectando...',
-          title: 'Aguarde...',
-        });
+
+        await trackPlayerAdd();
+
+        // await TrackPlayer.add({
+        //   id: 'stream',
+        //   url: STREAM_URL,
+        //   artist: 'WR Parque Verde',
+        //   title: 'Conectando...',
+        // });
 
         await TrackPlayer.play();
       } catch (e) {
@@ -32,7 +35,12 @@ export const ConnectionModal = () => {
     }
   };
   return (
-    <Modal visible={visible} transparent animationType={'fade'}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType={'fade'}
+      onRequestClose={() => setVisible(false)}
+    >
       <View style={styles.backdrop}>
         <View style={styles.modal}>
           <Text style={styles.title}>WR Parque Verde</Text>

@@ -4,7 +4,7 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 
 // imports locais
-import { STREAM_URL } from '../constants';
+import { trackPlayerAdd } from './trackPlayerAdd';
 
 let isPlayerInitialized: boolean = false;
 
@@ -31,13 +31,14 @@ export async function playerSetup(): Promise<void> {
       compactCapabilities: [Capability.Play, Capability.Pause],
     });
 
-    await TrackPlayer.add({
-      id: 'stream',
-      url: STREAM_URL,
-      artist: 'Conectando...',
-      title: 'Aguarde...',
-      artwork: undefined,
-    });
+    await trackPlayerAdd();
+
+    // await TrackPlayer.add({
+    //   id: 'stream',
+    //   url: STREAM_URL,
+    //   artist: 'WR Parque Verde',
+    //   title: 'Conectando...',
+    // });
 
     // coloca o player para tocar
     await TrackPlayer.play();
