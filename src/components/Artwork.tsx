@@ -5,11 +5,14 @@ import { Image } from 'expo-image';
 
 // imports locais
 import { CLOUDINARY_IMAGE } from '../constants';
+import { useArtworkStore } from '../store/artworkStore';
 import { styles } from '../styles/appStyles';
 
-type Props = { artwork: string | null };
+// type Props = { artwork: string | null };
 
-export function Artwork({ artwork }: Props) {
+// export function Artwork({ artwork }: Props) {
+export function Artwork() {
+  const { artwork } = useArtworkStore();
   return (
     <View style={styles.artworkContainer}>
       <View style={styles.shadows}>

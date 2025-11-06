@@ -15,17 +15,8 @@ import { useRadioPlayer } from './src/hooks/useRadioPlayer';
 import { styles } from './src/styles/appStyles';
 
 export default function App() {
-  const {
-    track,
-    playbackState,
-    togglePlayback,
-    loading,
-    appIsReady,
-    // visible,
-    // message,
-    // setVisible,
-    // statePlayer,
-  } = useRadioPlayer();
+  const { playbackState, togglePlayback, loading, appIsReady } =
+    useRadioPlayer();
 
   return (
     <ImageBackground
@@ -35,17 +26,12 @@ export default function App() {
     >
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="light" />
-        <ConnectionModal
-        // visible={visible}
-        // message={message}
-        // setVisible={setVisible}
-        // statePlayer={statePlayer}
-        />
+        <ConnectionModal />
         {appIsReady && (
           <>
             <Header />
-            <Artwork artwork={track.artwork} />
-            <TrackInfo artist={track.artist} title={track.title} />
+            <Artwork />
+            <TrackInfo />
             <PlayButton
               state={playbackState}
               loading={loading}

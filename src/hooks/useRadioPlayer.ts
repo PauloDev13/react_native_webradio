@@ -14,33 +14,48 @@ import * as SplashScreen from 'expo-splash-screen';
 import { CLOUDINARY_IMAGE, FONT_DEFAULT, LocalArtworkKey } from '../constants';
 import { fetchArtworkFromITunes } from '../services/fetchArtwork';
 import { playerSetup } from '../services/playerSetup';
+import { useArtworkStore } from '../store/artworkStore';
 import { useModalStore } from '../store/modalStore';
+import { useTrackInfo } from '../store/trackInfo';
 
 // Impede que a splash screen desapareça antes das fontes carregarem
 SplashScreen.preventAutoHideAsync();
 
-type TrackInfo = {
-  artist: string;
-  title: string;
-  artwork: string | LocalArtworkKey | null;
-};
+// type TrackInfo = {
+//   artist: string;
+//   title: string;
+// };
 
-const initialTrack: TrackInfo = {
-  artist: 'WR Parque Verde...',
-  title: 'Conectando...',
-  artwork: null,
-};
+// type TrackInfo = {
+//   artist: string;
+//   title: string;
+//   artwork: string | LocalArtworkKey | null;
+// };
+
+// const initialTrack: TrackInfo = {
+//   artist: 'WR Parque Verde',
+//   title: 'Conectando...',
+// };
+
+// const initialTrack: TrackInfo = {
+//   artist: 'WR Parque Verde...',
+//   title: 'Conectando...',
+//   artwork: null,
+// };
 
 export function useRadioPlayer() {
   const { setMessage, setVisible, setStatePlayer } = useModalStore();
+  const { setArtwork } = useArtworkStore();
+  const { interprete, song, setTrack } = useTrackInfo();
   const playbackState = usePlaybackState();
-  const [track, setTrack] = useState<TrackInfo>(initialTrack);
+  // const [track, setTrack] = useState<TrackInfo>(initialTrack);
   const [loading, setLoading] = useState<boolean>(false);
   const [appIsReady, setAppIsReady] = useState<boolean>(false);
   const [splashHidden, setSplashHidden] = useState<boolean>(false);
 
   // Carregamento das fontes
   useEffect(() => {
+    console.log('CARREGOU FONTES');
     let isMounted = true;
 
     const loadFonts = async () => {
@@ -65,6 +80,7 @@ export function useRadioPlayer() {
 
   // Inicialização do player
   useEffect(() => {
+    console.log('INICIOU O PLAYER');
     if (!appIsReady) return;
 
     const initPlayer = async () => {
@@ -88,6 +104,7 @@ export function useRadioPlayer() {
 
   // Metadados recebidos
   useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
+    console.log('ENTROU NO METADATA');
     let _artwork: string | LocalArtworkKey | null = null;
 
     if (event.metadata?.title) {
@@ -95,7 +112,7 @@ export function useRadioPlayer() {
       const artist = maybeArtist?.trim() || '';
       const title = maybeTitle?.trim() || '';
 
-      if (track.title !== title) {
+      if (title !== title) {
         _artwork = await fetchArtworkFromITunes(artist, title);
 
         // se o nome do artista é igual a 'Paulo Roberto',
@@ -112,7 +129,15 @@ export function useRadioPlayer() {
           _artwork = CLOUDINARY_IMAGE.logo;
         }
 
-        setTrack({ artist, title, artwork: _artwork });
+        console.log('ARTISTE', artist);
+        console.log('TIELE', title);
+
+        // setTrack({ artist, title });
+
+        setTrack(interprete, song);
+
+        setArtwork(_artwork);
+        // setTrack({ artist, title, artwork: _artwork });
 
         await TrackPlayer.updateNowPlayingMetadata({
           artist,
@@ -174,7 +199,7 @@ export function useRadioPlayer() {
 
   // retorna os estados que podem ser usados nos componentes para atualizar a UI
   return {
-    track,
+    // track,
     playbackState,
     togglePlayback,
     loading,
