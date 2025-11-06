@@ -4,14 +4,12 @@ import { Text, View } from 'react-native';
 import { useTrackInfo } from '../store/trackInfo';
 import { styles } from '../styles/appStyles';
 
-// type Props = { artist: string; title: string };
-
 export function TrackInfo() {
-  const { interprete, song } = useTrackInfo();
+  const { artist, title } = useTrackInfo().metadata;
   return (
     <View>
-      <Text style={styles.artistText}>{interprete}</Text>
-      <Text style={styles.titleText}>{song}</Text>
+      <Text style={styles.artistText}>{artist}</Text>
+      <Text style={styles.titleText}>{title}</Text>
     </View>
   );
 }

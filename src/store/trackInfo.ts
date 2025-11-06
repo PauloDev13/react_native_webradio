@@ -1,10 +1,8 @@
 import { create } from 'zustand';
 
 type tUseTrackInfo = {
-  // metadata: tTrackInfo;
-  interprete: string;
-  song: string;
-  setTrack: (interprete: string, song: string) => void;
+  metadata: tTrackInfo;
+  setTrack: (metadata: tTrackInfo) => void;
 };
 
 type tTrackInfo = {
@@ -13,11 +11,12 @@ type tTrackInfo = {
 };
 
 export const useTrackInfo = create<tUseTrackInfo>((set) => ({
-  interprete: 'WR Parque Verde',
-  song: 'Conectando...',
-  setTrack: (interprete: string, song: string) =>
+  metadata: { artist: 'WR Parque Verde', title: 'Conectando...' },
+  setTrack: (data: tTrackInfo) =>
     set((state) => ({
-      interprete: (state.interprete = interprete),
-      song: (state.song = song),
+      metadata: {
+        artist: (state.metadata.artist = data.artist),
+        title: (state.metadata.title = data.title),
+      },
     })),
 }));

@@ -21,34 +21,11 @@ import { useTrackInfo } from '../store/trackInfo';
 // Impede que a splash screen desapareça antes das fontes carregarem
 SplashScreen.preventAutoHideAsync();
 
-// type TrackInfo = {
-//   artist: string;
-//   title: string;
-// };
-
-// type TrackInfo = {
-//   artist: string;
-//   title: string;
-//   artwork: string | LocalArtworkKey | null;
-// };
-
-// const initialTrack: TrackInfo = {
-//   artist: 'WR Parque Verde',
-//   title: 'Conectando...',
-// };
-
-// const initialTrack: TrackInfo = {
-//   artist: 'WR Parque Verde...',
-//   title: 'Conectando...',
-//   artwork: null,
-// };
-
 export function useRadioPlayer() {
   const { setMessage, setVisible, setStatePlayer } = useModalStore();
   const { setArtwork } = useArtworkStore();
-  const { interprete, song, setTrack } = useTrackInfo();
+  const { setTrack } = useTrackInfo();
   const playbackState = usePlaybackState();
-  // const [track, setTrack] = useState<TrackInfo>(initialTrack);
   const [loading, setLoading] = useState<boolean>(false);
   const [appIsReady, setAppIsReady] = useState<boolean>(false);
   const [splashHidden, setSplashHidden] = useState<boolean>(false);
@@ -129,15 +106,9 @@ export function useRadioPlayer() {
           _artwork = CLOUDINARY_IMAGE.logo;
         }
 
-        console.log('ARTISTE', artist);
-        console.log('TIELE', title);
-
-        // setTrack({ artist, title });
-
-        setTrack(interprete, song);
+        setTrack({ artist, title });
 
         setArtwork(_artwork);
-        // setTrack({ artist, title, artwork: _artwork });
 
         await TrackPlayer.updateNowPlayingMetadata({
           artist,
@@ -199,7 +170,6 @@ export function useRadioPlayer() {
 
   // retorna os estados que podem ser usados nos componentes para atualizar a UI
   return {
-    // track,
     playbackState,
     togglePlayback,
     loading,
