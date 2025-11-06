@@ -1,20 +1,13 @@
-import React from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import TrackPlayer, { State } from 'react-native-track-player';
 
 // imports locais
 import { STREAM_URL } from '../constants';
-import { useModal } from '../store/modal';
-
-type Props = {
-  visible: boolean;
-  statePlayer: any;
-  message: string | null;
-  setVisible: React.Dispatch<React.SetStateAction<boolean>>;
-};
+import { useModalStore } from '../store/./modalStore';
 
 export const ConnectionModal = () => {
-  const { visible, message, statePlayer, setVisible } = useModal();
+  const { visible, message, setVisible, statePlayer } = useModalStore();
+
   const onReconnect = async () => {
     if (statePlayer === State.Ended) {
       try {

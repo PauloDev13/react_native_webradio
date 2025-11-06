@@ -2,7 +2,7 @@ import { State } from 'react-native-track-player';
 
 import { create } from 'zustand';
 
-type Modal = {
+type ModalStore = {
   message: string;
   visible: boolean;
   statePlayer: State;
@@ -11,10 +11,11 @@ type Modal = {
   setStatePlayer: (statePlayer: State) => void;
 };
 
-export const useModal = create<Modal>((set) => ({
+export const useModalStore = create<ModalStore>((set) => ({
   message: '',
   visible: false,
   statePlayer: State.None,
+
   setVisible: (visible: boolean) =>
     set((state) => ({
       visible: (state.visible = visible),

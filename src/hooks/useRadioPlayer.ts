@@ -14,6 +14,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { CLOUDINARY_IMAGE, FONT_DEFAULT, LocalArtworkKey } from '../constants';
 import { fetchArtworkFromITunes } from '../services/fetchArtwork';
 import { playerSetup } from '../services/playerSetup';
+import { useModalStore } from '../store/modalStore';
 
 // Impede que a splash screen desapareça antes das fontes carregarem
 SplashScreen.preventAutoHideAsync();
@@ -31,14 +32,15 @@ const initialTrack: TrackInfo = {
 };
 
 export function useRadioPlayer() {
+  const { setMessage, setVisible, setStatePlayer } = useModalStore();
   const playbackState = usePlaybackState();
   const [track, setTrack] = useState<TrackInfo>(initialTrack);
   const [loading, setLoading] = useState<boolean>(false);
   const [appIsReady, setAppIsReady] = useState<boolean>(false);
   const [splashHidden, setSplashHidden] = useState<boolean>(false);
-  const [message, setMessage] = useState<string>('Sem conexão...');
-  const [visible, setVisible] = useState<boolean>(false);
-  const [statePlayer, setStatePlayer] = useState(State.Stopped);
+  // const [message, setMessage] = useState<string>('Sem conexão...');
+  // const [visible, setVisible] = useState<boolean>(false);
+  // const [statePlayer, setStatePlayer] = useState(State.Stopped);
 
   // Carregamento das fontes
   useEffect(() => {
@@ -140,7 +142,7 @@ export function useRadioPlayer() {
       // abtribui mensagem ao setMessage
       setMessage('Conexão perdida...');
       // abtribui o valor true ao setVisible que será usado
-      // para exibir Modal quando a conexão for perdida
+      // para exibir ModalStore quando a conexão for perdida
       setVisible(true);
     }
     // se o evento do estado é Error (stream já está
@@ -180,9 +182,9 @@ export function useRadioPlayer() {
     togglePlayback,
     loading,
     appIsReady,
-    visible,
-    message,
-    setVisible,
-    statePlayer,
+    // visible,
+    // message,
+    // setVisible,
+    // statePlayer,
   };
 }

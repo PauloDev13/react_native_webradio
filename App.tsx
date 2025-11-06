@@ -21,10 +21,10 @@ export default function App() {
     togglePlayback,
     loading,
     appIsReady,
-    visible,
-    message,
-    setVisible,
-    statePlayer,
+    // visible,
+    // message,
+    // setVisible,
+    // statePlayer,
   } = useRadioPlayer();
 
   return (
@@ -36,10 +36,10 @@ export default function App() {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="light" />
         <ConnectionModal
-          visible={visible}
-          message={message}
-          setVisible={setVisible}
-          statePlayer={statePlayer}
+        // visible={visible}
+        // message={message}
+        // setVisible={setVisible}
+        // statePlayer={statePlayer}
         />
         {appIsReady && (
           <>
