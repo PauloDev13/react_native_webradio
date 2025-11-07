@@ -2,11 +2,20 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import TrackPlayer, { State } from 'react-native-track-player';
 
 // imports locais
+import { useShallow } from 'zustand/react/shallow';
+
 import { trackPlayerAdd } from '../services/trackPlayerAdd';
-import { useModalStore } from '../store/./modalStore';
+import { useStoreModal } from '../store/storeModal';
 
 export const ConnectionModal = () => {
-  const { visible, message, setVisible, statePlayer } = useModalStore();
+  const { visible, message, statePlayer, setModal } = useStoreModal(
+    useShallow((s) => ({
+      visible: s.visible,
+      message: s.message,
+      statePlayer: s.statePlayer,
+      setModal: s.setModal,
+    }))
+  );
 
   const onReconnect = async () => {
     if (statePlayer === State.Ended) {
@@ -15,23 +24,16 @@ export const ConnectionModal = () => {
 
         await trackPlayerAdd();
 
-        // await TrackPlayer.add({
-        //   id: 'stream',
-        //   url: STREAM_URL,
-        //   artist: 'WR Parque Verde',
-        //   title: 'Conectando...',
-        // });
-
         await TrackPlayer.play();
       } catch (e) {
         console.error('Erro ao reconectar servidor', e);
       }
-      setVisible(false);
+      setModal(false);
     }
 
     if (statePlayer === 'error') {
       await TrackPlayer.play();
-      setVisible(false);
+      setModal(false);
     }
   };
   return (
@@ -39,7 +41,7 @@ export const ConnectionModal = () => {
       visible={visible}
       transparent
       animationType={'fade'}
-      onRequestClose={() => setVisible(false)}
+      onRequestClose={() => setModal(false)}
     >
       <View style={styles.backdrop}>
         <View style={styles.modal}>

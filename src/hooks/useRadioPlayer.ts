@@ -11,20 +11,15 @@ import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
 // imports locais
-import { CLOUDINARY_IMAGE, FONT_DEFAULT, LocalArtworkKey } from '../constants';
-import { fetchArtworkFromITunes } from '../services/fetchArtwork';
+import { FONT_DEFAULT } from '../constants';
 import { playerSetup } from '../services/playerSetup';
-import { useArtworkStore } from '../store/artworkStore';
-import { useModalStore } from '../store/modalStore';
-import { useTrackInfo } from '../store/trackInfo';
+import { useStoreModal } from '../store/storeModal';
 
 // Impede que a splash screen desapareça antes das fontes carregarem
 SplashScreen.preventAutoHideAsync();
 
 export function useRadioPlayer() {
-  const { setMessage, setVisible, setStatePlayer } = useModalStore();
-  const { setArtwork } = useArtworkStore();
-  const { setTrack } = useTrackInfo();
+  const { setModal } = useStoreModal();
   const playbackState = usePlaybackState();
   const [loading, setLoading] = useState<boolean>(false);
   const [appIsReady, setAppIsReady] = useState<boolean>(false);
@@ -32,7 +27,6 @@ export function useRadioPlayer() {
 
   // Carregamento das fontes
   useEffect(() => {
-    console.log('CARREGOU FONTES');
     let isMounted = true;
 
     const loadFonts = async () => {
@@ -57,7 +51,6 @@ export function useRadioPlayer() {
 
   // Inicialização do player
   useEffect(() => {
-    console.log('INICIOU O PLAYER');
     if (!appIsReady) return;
 
     const initPlayer = async () => {
@@ -79,46 +72,6 @@ export function useRadioPlayer() {
     };
   }, [appIsReady, splashHidden]);
 
-  // Metadados recebidos
-  useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
-    console.log('ENTROU NO METADATA');
-    let _artwork: string | LocalArtworkKey | null = null;
-
-    if (event.metadata?.title) {
-      const [maybeArtist, maybeTitle] = event.metadata.title.split(' - ');
-      const artist = maybeArtist?.trim() || '';
-      const title = maybeTitle?.trim() || '';
-
-      if (title !== title) {
-        _artwork = await fetchArtworkFromITunes(artist, title);
-
-        // se o nome do artista é igual a 'Paulo Roberto',
-        // exibe a foto do locutor
-        if (artist === 'Paulo Roberto') {
-          _artwork = CLOUDINARY_IMAGE.locucao;
-        } else if (
-          artist.startsWith('Web') ||
-          title === 'Hora' ||
-          title === 'Minuto'
-        ) {
-          _artwork = CLOUDINARY_IMAGE.logo;
-        } else if (_artwork === null) {
-          _artwork = CLOUDINARY_IMAGE.logo;
-        }
-
-        setTrack({ artist, title });
-
-        setArtwork(_artwork);
-
-        await TrackPlayer.updateNowPlayingMetadata({
-          artist,
-          title,
-          artwork: _artwork!,
-        });
-      }
-    }
-  });
-
   useTrackPlayerEvents([Event.PlaybackState], async (event) => {
     // se o player está no estado Buffering
     if (event.state === State.Buffering && !splashHidden) {
@@ -131,20 +84,13 @@ export function useRadioPlayer() {
     if (event.state === State.Ended) {
       console.error('ERRO ENDED');
       // abtribui o estado ao setStatePlayer
-      setStatePlayer(State.Ended);
-      // abtribui mensagem ao setMessage
-      setMessage('Conexão perdida...');
-      // abtribui o valor true ao setVisible que será usado
-      // para exibir ModalStore quando a conexão for perdida
-      setVisible(true);
+      setModal(true, 'Conexão perdida...', State.Ended);
     }
     // se o evento do estado é Error (stream já está
     // offline quando o player é aberto)
     if (event.state === State.Error) {
       console.error('ERRO ENDED');
-      setStatePlayer(State.Error);
-      setMessage('Conexão perdida...');
-      setVisible(true);
+      setModal(true, 'Conexão perdida...', State.Error);
     }
   });
 

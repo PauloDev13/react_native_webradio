@@ -1,18 +1,13 @@
 import React from 'react';
 import { View } from 'react-native';
 
-import { Image } from 'expo-image';
+import { Image } from 'expo-image'; // imports locais
 
-// imports locais
-import { CLOUDINARY_IMAGE } from '../constants';
-import { useArtworkStore } from '../store/artworkStore';
+import { storeTrackInfo } from '../store/storeTrackInfo';
 import { styles } from '../styles/appStyles';
 
-// type Props = { artwork: string | null };
-
-// export function Artwork({ artwork }: Props) {
 export function Artwork() {
-  const { artwork } = useArtworkStore();
+  const artwork = storeTrackInfo((state) => state.artwork);
   return (
     <View style={styles.artworkContainer}>
       <View style={styles.shadows}>
@@ -22,11 +17,10 @@ export function Artwork() {
           style={styles.artwork}
           cachePolicy={'disk'}
           contentFit={'cover'}
-          placeholder={{ uri: CLOUDINARY_IMAGE.logo }}
           onError={(e) => {
             console.warn('A capa não foi carregada: ', e.error ?? e);
           }}
-          transition={250}
+          transition={500}
           priority={'high'}
         />
       </View>

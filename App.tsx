@@ -12,9 +12,11 @@ import { PlayButton } from './src/components/PlayButton';
 import { TrackInfo } from './src/components/TrackInfo';
 import { IMAGES } from './src/constants';
 import { useRadioPlayer } from './src/hooks/useRadioPlayer';
+import { UseTrackInfoListener } from './src/hooks/useTrackInfoListener';
 import { styles } from './src/styles/appStyles';
 
 export default function App() {
+  UseTrackInfoListener();
   const { appIsReady } = useRadioPlayer();
 
   return (
