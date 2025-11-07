@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { CLOUDINARY_IMAGE, LocalArtworkKey } from '../constants';
 import { fetchArtworkFromITunes } from '../services/fetchArtwork';
+import { useStoreArtwork } from '../store/storeArtwork';
 import { storeTrackInfo } from '../store/storeTrackInfo';
 
 export function UseTrackInfoListener() {
@@ -17,7 +18,7 @@ export function UseTrackInfoListener() {
       setTrack: s.setTrack,
     }))
   );
-  // const setTrack = storeTrackInfo((s) => s.setTrack);
+  const setArtwork = useStoreArtwork((s) => s.setArtwork);
   // const artist = storeTrackInfo((s) => s.artist);
   // const title = storeTrackInfo((s) => s.title);
 
@@ -46,7 +47,8 @@ export function UseTrackInfoListener() {
           _artwork = CLOUDINARY_IMAGE.logo;
         }
 
-        setTrack(_artist, _title, _artwork);
+        setTrack(_artist, _title);
+        setArtwork(_artwork);
 
         await TrackPlayer.updateNowPlayingMetadata({
           artist: _artist,

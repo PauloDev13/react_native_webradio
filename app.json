@@ -9,6 +9,23 @@
         {
           "launchMode": "most-recent"
         }
+      ],
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "Michroma",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/Michroma-Regular.ttf"
+                  }
+                ]
+              }
+            ]
+          }
+        }
       ]
     ],
     "name": "WR Parque Verde",

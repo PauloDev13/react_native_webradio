@@ -51,7 +51,7 @@ export function useRadioPlayer() {
 
   // Inicialização do player
   useEffect(() => {
-    if (!appIsReady) return;
+    // if (!appIsReady) return;
 
     const initPlayer = async () => {
       // chama função que inicializa e toca o player
@@ -89,7 +89,7 @@ export function useRadioPlayer() {
     // se o evento do estado é Error (stream já está
     // offline quando o player é aberto)
     if (event.state === State.Error) {
-      console.error('ERRO ENDED');
+      console.error('ERRO ERROR');
       setModal(true, 'Conexão perdida...', State.Error);
     }
   });

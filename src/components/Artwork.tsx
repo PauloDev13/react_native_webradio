@@ -3,11 +3,12 @@ import { View } from 'react-native';
 
 import { Image } from 'expo-image'; // imports locais
 
-import { storeTrackInfo } from '../store/storeTrackInfo';
+import { useStoreArtwork } from '../store/storeArtwork';
 import { styles } from '../styles/appStyles';
 
 export function Artwork() {
-  const artwork = storeTrackInfo((state) => state.artwork);
+  const artwork = useStoreArtwork((state) => state.artwork);
+
   return (
     <View style={styles.artworkContainer}>
       <View style={styles.shadows}>
@@ -20,7 +21,11 @@ export function Artwork() {
           onError={(e) => {
             console.warn('A capa não foi carregada: ', e.error ?? e);
           }}
-          transition={500}
+          transition={{
+            effect: 'flip-from-right',
+            duration: 500,
+            timing: 'ease-out',
+          }}
           priority={'high'}
         />
       </View>
