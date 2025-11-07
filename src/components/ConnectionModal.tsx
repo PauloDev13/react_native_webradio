@@ -2,20 +2,11 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import TrackPlayer, { State } from 'react-native-track-player';
 
 // imports locais
-import { useShallow } from 'zustand/react/shallow';
-
 import { trackPlayerAdd } from '../services/trackPlayerAdd';
 import { useStoreModal } from '../store/storeModal';
 
 export const ConnectionModal = () => {
-  const { visible, message, statePlayer, setModal } = useStoreModal(
-    useShallow((s) => ({
-      visible: s.visible,
-      message: s.message,
-      statePlayer: s.statePlayer,
-      setModal: s.setModal,
-    }))
-  );
+  const { visible, message, statePlayer, setModal } = useStoreModal();
 
   const onReconnect = async () => {
     if (statePlayer === State.Ended) {

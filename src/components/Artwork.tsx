@@ -1,32 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { Image } from 'expo-image'; // imports locais
+import { Image } from 'expo-image';
 
+// imports locais
+import { CLOUDINARY_IMAGE } from '../constants';
 import { useStoreArtwork } from '../store/storeArtwork';
 import { styles } from '../styles/appStyles';
 
 export function Artwork() {
-  const artwork = useStoreArtwork((state) => state.artwork);
+  const { artwork, nextArtwork, confirmArtworkLoaded } = useStoreArtwork();
+  const [displayedArtwork, setDisplayedArtwork] = useState<string | null>(
+    artwork
+  );
+
+  useEffect(() => {
+    if (nextArtwork) {
+      setDisplayedArtwork(nextArtwork);
+    }
+  }, [nextArtwork]);
+
+  const handleLoadEnd = () => {
+    if (nextArtwork) {
+      confirmArtworkLoaded();
+    }
+  };
 
   return (
     <View style={styles.artworkContainer}>
       <View style={styles.shadows}>
         <Image
-          key={artwork!}
-          source={{ uri: artwork! }}
+          source={{ uri: displayedArtwork ?? artwork ?? undefined }}
           style={styles.artwork}
-          cachePolicy={'disk'}
-          contentFit={'cover'}
+          cachePolicy="disk"
+          contentFit="cover"
+          placeholder={CLOUDINARY_IMAGE.logo}
+          onLoadEnd={handleLoadEnd}
           onError={(e) => {
             console.warn('A capa não foi carregada: ', e.error ?? e);
+            if (artwork || nextArtwork) {
+              setDisplayedArtwork(artwork);
+            }
           }}
           transition={{
-            effect: 'flip-from-right',
-            duration: 500,
-            timing: 'ease-out',
+            effect: 'cross-dissolve',
+            duration: 400,
+            timing: 'ease-in-out',
           }}
-          priority={'high'}
         />
       </View>
     </View>
