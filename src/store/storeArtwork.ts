@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { CLOUDINARY_IMAGE } from '../constants';
+
 type tStoreArtwork = {
   artwork: string | null;
   nextArtwork: string | null;
@@ -8,7 +10,7 @@ type tStoreArtwork = {
 };
 
 export const useStoreArtwork = create<tStoreArtwork>((set, get) => ({
-  artwork: null,
+  artwork: CLOUDINARY_IMAGE.logo,
   nextArtwork: null,
 
   setArtwork: (artwork: string | null) => {

@@ -4,7 +4,6 @@ import { View } from 'react-native';
 import { Image } from 'expo-image';
 
 // imports locais
-import { CLOUDINARY_IMAGE } from '../constants';
 import { useStoreArtwork } from '../store/storeArtwork';
 import { styles } from '../styles/appStyles';
 
@@ -34,13 +33,11 @@ export function Artwork() {
           style={styles.artwork}
           cachePolicy="disk"
           contentFit="cover"
-          placeholder={CLOUDINARY_IMAGE.logo}
+          // placeholder={CLOUDINARY_IMAGE.logo}
           onLoadEnd={handleLoadEnd}
           onError={(e) => {
             console.warn('A capa não foi carregada: ', e.error ?? e);
-            if (artwork || nextArtwork) {
-              setDisplayedArtwork(artwork);
-            }
+            setDisplayedArtwork(artwork);
           }}
           transition={{
             effect: 'cross-dissolve',

@@ -3,46 +3,37 @@ import TrackPlayer, {
   useTrackPlayerEvents,
 } from 'react-native-track-player';
 
-import { useShallow } from 'zustand/react/shallow';
-
 import { CLOUDINARY_IMAGE, LocalArtworkKey } from '../constants';
 import { fetchArtworkFromITunes } from '../services/fetchArtwork';
 import { useStoreArtwork } from '../store/storeArtwork';
 import { storeTrackInfo } from '../store/storeTrackInfo';
 
 export function UseTrackInfoListener() {
-  const { artist, title, setTrack } = storeTrackInfo(
-    useShallow((s) => ({
-      artist: s.artist,
-      title: s.title,
-      setTrack: s.setTrack,
-    }))
-  );
-  const setArtwork = useStoreArtwork((s) => s.setArtwork);
-  // const artist = storeTrackInfo((s) => s.artist);
-  // const title = storeTrackInfo((s) => s.title);
+  const { artist, title, setTrack } = storeTrackInfo();
+  const { setArtwork } = useStoreArtwork();
 
   useTrackPlayerEvents([Event.MetadataCommonReceived], async (event) => {
     let _artwork: string | LocalArtworkKey | null = null;
 
     if (event.metadata?.title) {
       const [maybeArtist, maybeTitle] = event.metadata.title.split(' - ');
-      const _artist = maybeArtist?.trim() || '';
-      const _title = maybeTitle?.trim() || '';
+      let _artist = maybeArtist?.trim() || '';
+      let _title = maybeTitle?.trim() || '';
 
       if (_title !== title || _artist !== artist) {
         _artwork = await fetchArtworkFromITunes(_artist, _title);
 
-        // se o nome do artista é igual a 'Paulo Roberto',
-        // exibe a foto do locutor
+        // muda os nomes que serão exibidos nas variáveis artist, title e artwork
+        // conforme os valores recebidos originalmente do player
         if (_artist === 'Paulo Roberto') {
           _artwork = CLOUDINARY_IMAGE.locucao;
-        } else if (
-          _artist.startsWith('Web') ||
-          _title === 'Hora' ||
-          _title === 'Minuto'
-        ) {
+          _title = 'Radialista/Jornalista';
+        } else if (_artist.startsWith('Web')) {
           _artwork = CLOUDINARY_IMAGE.logo;
+        } else if (_title === 'Hora' || _title === 'Minuto') {
+          _artwork = CLOUDINARY_IMAGE.logo;
+          _artist = 'Hora Certa';
+          _title = '';
         } else if (_artwork === null) {
           _artwork = CLOUDINARY_IMAGE.logo;
         }

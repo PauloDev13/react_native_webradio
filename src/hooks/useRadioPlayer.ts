@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
-import TrackPlayer, {
-  Event,
-  State,
-  usePlaybackState,
-  useTrackPlayerEvents,
-} from 'react-native-track-player';
+import { Event, State, useTrackPlayerEvents } from 'react-native-track-player';
 
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -20,8 +15,6 @@ SplashScreen.preventAutoHideAsync();
 
 export function useRadioPlayer() {
   const { setModal } = useStoreModal();
-  const playbackState = usePlaybackState();
-  const [loading, setLoading] = useState<boolean>(false);
   const [appIsReady, setAppIsReady] = useState<boolean>(false);
   const [splashHidden, setSplashHidden] = useState<boolean>(false);
 
@@ -70,7 +63,7 @@ export function useRadioPlayer() {
     return () => {
       subscription.remove();
     };
-  }, [appIsReady, splashHidden]);
+  }, [appIsReady]);
 
   useTrackPlayerEvents([Event.PlaybackState], async (event) => {
     // se o player está no estado Buffering
@@ -94,31 +87,8 @@ export function useRadioPlayer() {
     }
   });
 
-  // controles play/estop
-  const togglePlayback = async () => {
-    setLoading(true);
-
-    // permite atualização da UI
-    await Promise.resolve();
-
-    try {
-      const playback = await TrackPlayer.getPlaybackState();
-
-      if (playback.state === State.Playing) {
-        await TrackPlayer.stop();
-      } else {
-        await TrackPlayer.play();
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // retorna os estados que podem ser usados nos componentes para atualizar a UI
   return {
-    playbackState,
-    togglePlayback,
-    loading,
     appIsReady,
   };
 }

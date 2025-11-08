@@ -17,11 +17,12 @@ export const styles = StyleSheet.create({
   shadows: {
     overflow: 'visible',
     shadowColor: '#03ebff',
-    shadowOffset: { width: 10, height: 20 },
+    shadowOffset: { width: 5, height: 20 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
     elevation: 10,
     borderRadius: 12,
+    padding: 5,
   },
   title: {
     fontSize: 20,
@@ -46,7 +47,6 @@ export const styles = StyleSheet.create({
     height: 220,
     borderRadius: 12,
     backgroundColor: 'transparent',
-    margin: 2,
   },
   artistText: {
     fontSize: 16,

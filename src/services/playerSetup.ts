@@ -31,14 +31,8 @@ export async function playerSetup(): Promise<void> {
       compactCapabilities: [Capability.Play, Capability.Pause],
     });
 
+    // adiciona o player
     await trackPlayerAdd();
-
-    // await TrackPlayer.add({
-    //   id: 'stream',
-    //   url: STREAM_URL,
-    //   artist: 'WR Parque Verde',
-    //   title: 'Conectando...',
-    // });
 
     // coloca o player para tocar
     await TrackPlayer.play();
