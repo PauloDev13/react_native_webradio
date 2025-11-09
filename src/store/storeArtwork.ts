@@ -2,14 +2,14 @@ import { create } from 'zustand';
 
 import { CLOUDINARY_IMAGE } from '../constants';
 
-type tStoreArtwork = {
+type StoreArtwork = {
   artwork: string | null;
   nextArtwork: string | null;
   setArtwork: (artwork: string | null) => void;
   confirmArtworkLoaded: () => void;
 };
 
-export const useStoreArtwork = create<tStoreArtwork>((set, get) => ({
+export const useStoreArtwork = create<StoreArtwork>((set, get) => ({
   artwork: CLOUDINARY_IMAGE.logo,
   nextArtwork: null,
 

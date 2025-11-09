@@ -10,6 +10,8 @@ let isPlayerInitialized: boolean = false;
 
 // Função que inicializa o player quando o app é aberto
 export async function playerSetup(): Promise<void> {
+  console.log('FUNCTION PLAYER SETUP');
+
   if (isPlayerInitialized) {
     console.log('Player já iniciado');
     return;

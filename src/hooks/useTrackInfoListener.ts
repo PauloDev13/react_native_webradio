@@ -9,6 +9,8 @@ import { useStoreArtwork } from '../store/storeArtwork';
 import { storeTrackInfo } from '../store/storeTrackInfo';
 
 export function UseTrackInfoListener() {
+  console.log('USE TRACK INFO');
+
   const { artist, title, setTrack } = storeTrackInfo();
   const { setArtwork } = useStoreArtwork();
 

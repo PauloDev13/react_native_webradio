@@ -3,10 +3,12 @@ import TrackPlayer, { State } from 'react-native-track-player';
 
 // imports locais
 import { trackPlayerAdd } from '../services/trackPlayerAdd';
-import { useStoreModal } from '../store/storeModal';
+// import { useStoreModal } from '../store/storeModal';
+import { useStoreTestModal } from '../store/storeTestModal';
 
 export const ConnectionModal = () => {
-  const { visible, message, statePlayer, setModal } = useStoreModal();
+  // const { visible, message, statePlayer, setModal } = useStoreModal();
+  const { visible, message, statePlayer } = useStoreTestModal();
 
   const onReconnect = async () => {
     if (statePlayer === State.Ended) {
@@ -19,21 +21,14 @@ export const ConnectionModal = () => {
       } catch (e) {
         console.error('Erro ao reconectar servidor', e);
       }
-      setModal(false);
     }
 
     if (statePlayer === 'error') {
       await TrackPlayer.play();
-      setModal(false);
     }
   };
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType={'fade'}
-      onRequestClose={() => setModal(false)}
-    >
+    <Modal visible={visible} transparent animationType={'fade'}>
       <View style={styles.backdrop}>
         <View style={styles.modal}>
           <Text style={styles.title}>WR Parque Verde</Text>

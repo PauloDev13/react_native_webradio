@@ -3,6 +3,8 @@ export async function fetchArtworkFromITunes(
   artist: string,
   title: string
 ): Promise<string | null> {
+  console.log('FUNCTION FETCH ARTWORK FROM ITUNES');
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 

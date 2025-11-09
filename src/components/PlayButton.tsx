@@ -1,32 +1,32 @@
 import { ActivityIndicator, TouchableOpacity } from 'react-native';
-import { State, usePlaybackState } from 'react-native-track-player';
 
 import { MaterialIcons } from '@expo/vector-icons'; // imports locais
 
 // imports locais
-import { togglePlayback } from '../services/togglePlayback';
+import { useStoreTogglePlayback } from '../store/storeTogglePlayback';
 import { styles } from '../styles/appStyles';
 
 export function PlayButton() {
-  const playbackState = usePlaybackState();
+  // const playbackState = usePlaybackState();
+  const { loading, togglePlayback } = useStoreTogglePlayback();
 
   return (
     <TouchableOpacity
       style={[
         styles.playButton,
-        playbackState.state === State.Playing && styles.playing,
+        !loading && loading !== null && styles.playing,
       ]}
       onPress={togglePlayback}
     >
-      {playbackState.state === State.Buffering ? (
+      {loading ? (
         <ActivityIndicator color="#03ebff" />
       ) : (
         <MaterialIcons
           style={[
             styles.iconStart,
-            playbackState.state === State.Playing && styles.iconStop,
+            !loading && loading !== null && styles.iconStop,
           ]}
-          name={playbackState.state === State.Playing ? 'pause' : 'play-arrow'}
+          name={!loading && loading !== null ? 'pause' : 'play-arrow'}
           color="#fff"
           size={30}
         />

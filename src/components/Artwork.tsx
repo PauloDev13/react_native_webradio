@@ -33,7 +33,6 @@ export function Artwork() {
           style={styles.artwork}
           cachePolicy="disk"
           contentFit="cover"
-          // placeholder={CLOUDINARY_IMAGE.logo}
           onLoadEnd={handleLoadEnd}
           onError={(e) => {
             console.warn('A capa não foi carregada: ', e.error ?? e);
