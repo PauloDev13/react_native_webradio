@@ -38,6 +38,7 @@ export async function playerSetup(): Promise<void> {
 
     // coloca o player para tocar
     await TrackPlayer.play();
+
     isPlayerInitialized = true;
   } catch (err) {
     console.warn('Mensagem do catch do playerSetup', err);

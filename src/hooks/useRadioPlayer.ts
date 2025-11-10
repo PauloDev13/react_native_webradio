@@ -13,7 +13,8 @@ SplashScreen.preventAutoHideAsync();
 
 export function useRadioPlayer() {
   const [appIsReady, setAppIsReady] = useState<boolean>(false);
-  // Carregamento das fontes
+
+  // hook de carregamento das fontes
   useEffect(() => {
     console.log('USE EFFECT CARREGAMENTO FONTES');
     let isMounted = true;
@@ -38,15 +39,11 @@ export function useRadioPlayer() {
     };
   }, []);
 
-  // Inicialização do player
+  // hook de Inicialização do player
   useEffect(() => {
     console.log('USE EFFECT INICIALIZAÇÃO DO PLAYER');
 
     if (!appIsReady) return;
-
-    if (appIsReady) {
-      SplashScreen.hide();
-    }
 
     const initPlayer = async () => {
       // chama função que inicializa e toca o player
@@ -61,7 +58,6 @@ export function useRadioPlayer() {
         if (state === 'active') initPlayer();
       }
     );
-
     return () => {
       subscription.remove();
     };

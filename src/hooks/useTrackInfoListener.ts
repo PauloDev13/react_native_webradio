@@ -23,8 +23,6 @@ export function UseTrackInfoListener() {
       let _title = maybeTitle?.trim() || '';
 
       if (_title !== title || _artist !== artist) {
-        _artwork = await fetchArtworkFromITunes(_artist, _title);
-
         // muda os nomes que serão exibidos nas variáveis artist, title e artwork
         // conforme os valores recebidos originalmente do player
         if (_artist === 'Paulo Roberto') {
@@ -36,7 +34,14 @@ export function UseTrackInfoListener() {
           _artwork = CLOUDINARY_IMAGE.logo;
           _artist = 'Hora Certa';
           _title = '';
-        } else if (_artwork === null) {
+        } else {
+          // se nenhuma das alternativas acima for atendida,
+          // vai à API do iTunes buscar a capa
+          _artwork = await fetchArtworkFromITunes(_artist, _title);
+        }
+
+        // se o retorno da API for nulo, mostra a logo da rádio
+        if (_artwork === null) {
           _artwork = CLOUDINARY_IMAGE.logo;
         }
 
