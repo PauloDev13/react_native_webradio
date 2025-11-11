@@ -14,9 +14,9 @@ export const useStoreArtwork = create<StoreArtwork>((set, get) => ({
   nextArtwork: null,
 
   setArtwork: (artwork: string | null) => {
-    // const { artwork: current } = get();
-    const state = get();
-    const current = state.artwork;
+    const { artwork: current } = get();
+    // const state = get();
+    // const current = state.artwork;
 
     if (artwork && artwork !== current) {
       set({ nextArtwork: artwork });

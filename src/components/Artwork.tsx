@@ -33,6 +33,7 @@ export function Artwork() {
           style={styles.artwork}
           cachePolicy="disk"
           contentFit="cover"
+          onLoad={handleLoadEnd}
           onLoadEnd={handleLoadEnd}
           onError={(e) => {
             console.warn('A capa não foi carregada: ', e.error ?? e);
